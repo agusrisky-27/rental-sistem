@@ -1,0 +1,208 @@
+<template>
+  <div>
+    <div class="flex justify-between items-end mb-8">
+      <div>
+        <h1 class="text-headline-lg font-headline-lg text-on-surface mb-2">Manajemen Pengembalian</h1>
+        <p class="text-body-md font-body-md text-on-surface-variant">Kelola kendaraan yang harus dikembalikan.</p>
+      </div>
+      <!-- Quick stats -->
+      <div class="flex gap-4">
+        <div class="glass-card p-4 rounded-xl flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-error/10 flex items-center justify-center text-error">
+            <span class="material-symbols-outlined">warning</span>
+          </div>
+          <div>
+            <p class="text-label-sm font-label-sm text-on-surface-variant">Terlambat</p>
+            <p class="text-headline-md font-headline-md text-on-surface">{{ terlambatCount }}</p>
+          </div>
+        </div>
+        <div class="glass-card p-4 rounded-xl flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+            <span class="material-symbols-outlined">today</span>
+          </div>
+          <div>
+            <p class="text-label-sm font-label-sm text-on-surface-variant">Hari Ini</p>
+            <p class="text-headline-md font-headline-md text-on-surface">{{ hariIniCount }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(15,23,42,0.05)] border border-surface-variant overflow-hidden">
+      <div class="p-6 border-b border-surface-variant flex justify-between items-center bg-surface-bright">
+        <h3 class="text-headline-md font-headline-md text-on-surface">Daftar Kendaraan</h3>
+        <div class="relative">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
+            style="font-size:18px">search</span>
+          <input v-model="search" type="text" placeholder="Cari Nopol atau Pelanggan..."
+            class="pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none
+                   focus:border-secondary focus:ring-1 focus:ring-secondary text-body-md bg-surface transition-all" />
+        </div>
+      </div>
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-container-low border-b border-surface-variant text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">
+            <th class="p-4 font-semibold">Kendaraan & Nopol</th>
+            <th class="p-4 font-semibold">Pelanggan</th>
+            <th class="p-4 font-semibold">Jadwal Kembali</th>
+            <th class="p-4 font-semibold">Status</th>
+            <th class="p-4 font-semibold">Denda (Est)</th>
+            <th class="p-4 font-semibold text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody class="text-body-md divide-y divide-surface-variant">
+          <tr v-for="item in filteredData" :key="item.id"
+            class="hover:bg-surface-container-low/50 transition-colors"
+            :class="item.status === 'terlambat' ? 'bg-error/5' : ''">
+            <td class="p-4">
+              <div class="font-semibold text-on-surface">{{ item.kendaraan }}</div>
+              <div class="text-label-sm font-label-sm text-on-surface-variant mt-1">{{ item.plat }}</div>
+            </td>
+            <td class="p-4">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-primary-fixed-dim text-on-primary-fixed
+                            flex items-center justify-center font-bold text-label-sm">
+                  {{ initials(item.pelanggan) }}
+                </div>
+                <div>
+                  <div class="text-on-surface font-medium">{{ item.pelanggan }}</div>
+                  <div class="text-label-sm font-label-sm text-on-surface-variant">{{ item.telepon }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="p-4">
+              <span :class="item.status === 'terlambat' ? 'text-error font-medium' : 'text-on-surface'">
+                {{ item.jadwal }}
+              </span>
+            </td>
+            <td class="p-4">
+              <StatusBadge :status="item.status" />
+            </td>
+            <td class="p-4 font-semibold" :class="item.denda ? 'text-error' : 'text-on-surface-variant'">
+              {{ item.denda ? formatRupiah(item.denda) : '-' }}
+            </td>
+            <td class="p-4 text-right">
+              <button @click="openTerima(item)"
+                class="bg-secondary text-on-secondary px-4 py-2 rounded-lg text-label-md font-label-md
+                       font-bold hover:bg-secondary/90 transition-colors">
+                Terima
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="p-4 border-t border-surface-variant bg-surface-bright flex justify-between items-center">
+        <p class="text-label-sm font-label-sm text-on-surface-variant">
+          Menampilkan {{ filteredData.length }} data
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal Detail Pengembalian -->
+    <BaseModal v-model="showModal" max-width="600px">
+      <template #header>
+        <h2 class="text-headline-md font-headline-md text-primary">Detail Pengembalian</h2>
+      </template>
+
+      <div v-if="selected" class="flex flex-col gap-6">
+        <!-- Info grid -->
+        <div class="grid grid-cols-2 gap-y-4 gap-x-6">
+          <div v-for="row in infoRows" :key="row.label" class="flex flex-col"
+            :class="row.full ? 'col-span-2' : ''">
+            <span class="text-label-sm font-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">
+              {{ row.label }}
+            </span>
+            <span class="text-body-md font-body-md text-on-surface" :class="row.bold ? 'font-semibold' : ''">
+              {{ row.value }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Denda warning -->
+        <div v-if="selected.denda"
+          class="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+          <span class="material-symbols-outlined text-amber-500 fill mt-0.5">warning</span>
+          <div>
+            <h3 class="text-label-md font-label-md text-amber-900 font-bold mb-1">
+              Keterlambatan · Denda: {{ formatRupiah(selected.denda) }}
+            </h3>
+            <p class="text-sm text-amber-800">Denda dihitung berdasarkan tarif harian.</p>
+          </div>
+        </div>
+
+        <!-- Catatan kondisi -->
+        <div class="flex flex-col gap-2">
+          <label class="text-label-md font-label-md text-primary">Catatan Kondisi Kendaraan</label>
+          <textarea v-model="catatan" rows="3" placeholder="Misal: Baret halus di bumper depan, bensin full."
+            class="w-full rounded-lg border border-outline-variant bg-surface px-3 py-2
+                   text-body-md focus:border-secondary focus:outline-none focus:ring-1
+                   focus:ring-secondary transition-all resize-none"></textarea>
+        </div>
+      </div>
+
+      <template #footer>
+        <button @click="showModal = false"
+          class="px-6 py-2 rounded-lg border border-primary text-primary bg-white
+                 hover:bg-surface-variant text-label-md font-label-md transition-colors">
+          Batal
+        </button>
+        <button @click="selesaikan"
+          class="px-6 py-2 rounded-lg bg-secondary text-on-secondary font-bold
+                 hover:bg-secondary-container text-label-md shadow-sm transition-colors">
+          Simpan & Selesaikan
+        </button>
+      </template>
+    </BaseModal>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue'
+import { useToastStore } from '@/stores/toast'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
+import BaseModal   from '@/components/ui/BaseModal.vue'
+
+const toast     = useToastStore()
+const search    = ref('')
+const showModal = ref(false)
+const selected  = ref(null)
+const catatan   = ref('')
+
+const data = ref([
+  { id:1, kendaraan:'Toyota Innova Zenix', plat:'B 1234 ABC', pelanggan:'Budi Santoso',  telepon:'0812-3456-7890', jadwal:'Kemarin, 14:00', status:'terlambat', denda:250000  },
+  { id:2, kendaraan:'Honda CR-V',          plat:'D 5678 DEF', pelanggan:'Siti Wahyuni',  telepon:'0856-7890-1234', jadwal:'Hari ini, 16:00', status:'hari ini',  denda:0       },
+  { id:3, kendaraan:'Mitsubishi Pajero',   plat:'L 9012 GHI', pelanggan:'Agus Setiawan', telepon:'0819-2345-6789', jadwal:'Hari ini, 18:30', status:'hari ini',  denda:0       },
+])
+
+const terlambatCount = computed(() => data.value.filter(d => d.status === 'terlambat').length)
+const hariIniCount   = computed(() => data.value.filter(d => d.status === 'hari ini').length)
+const filteredData   = computed(() => {
+  if (!search.value) return data.value
+  const q = search.value.toLowerCase()
+  return data.value.filter(d => d.kendaraan.toLowerCase().includes(q) || d.pelanggan.toLowerCase().includes(q) || d.plat.toLowerCase().includes(q))
+})
+
+const infoRows = computed(() => selected.value ? [
+  { label:'Pelanggan',               value: selected.value.pelanggan },
+  { label:'Kendaraan',               value: `${selected.value.kendaraan} - ${selected.value.plat}` },
+  { label:'Jadwal Kembali',          value: selected.value.jadwal },
+  { label:'Status',                  value: selected.value.status },
+  { label:'Denda Estimasi', full:true, bold:true, value: selected.value.denda ? formatRupiah(selected.value.denda) : 'Tidak ada denda' },
+] : [])
+
+function initials(n)    { return n.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase() }
+function formatRupiah(n){ return 'Rp ' + Number(n).toLocaleString('id-ID') }
+
+function openTerima(item) {
+  selected.value = item
+  catatan.value  = ''
+  showModal.value = true
+}
+
+function selesaikan() {
+  data.value = data.value.filter(d => d.id !== selected.value.id)
+  toast.success('Selesai', `Pengembalian ${selected.value.kendaraan} berhasil dicatat.`)
+  showModal.value = false
+}
+</script>
