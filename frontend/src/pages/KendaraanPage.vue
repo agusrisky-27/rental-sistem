@@ -56,46 +56,55 @@
           </tr>
         </thead>
         <tbody class="text-body-md font-body-md">
-          <tr v-for="k in filteredKendaraan" :key="k.id"
-            class="border-b border-surface-variant hover:bg-surface-container-lowest/50 transition-colors group">
-            <td class="py-4 px-6 flex items-center gap-4">
-              <div class="w-16 h-12 rounded-lg bg-surface-container overflow-hidden flex items-center justify-center">
-                <span class="material-symbols-outlined text-outline text-3xl">directions_car</span>
-              </div>
-              <span class="font-semibold text-primary">{{ k.nama }}</span>
-            </td>
-            <td class="py-4 px-6 text-on-surface">{{ k.tipe }}</td>
-            <td class="py-4 px-6 text-on-surface">{{ k.plat }}</td>
-            <td class="py-4 px-6 text-on-surface">{{ formatRupiah(k.harga) }}</td>
-            <td class="py-4 px-6">
-              <StatusBadge :status="k.status" />
-            </td>
-            <td class="py-4 px-6 text-right">
-              <button @click="openEdit(k)"
-                class="text-on-surface-variant hover:text-secondary p-1
-                       opacity-0 group-hover:opacity-100 transition-opacity">
-                <span class="material-symbols-outlined">edit</span>
-              </button>
-              <button @click="openHapus(k)"
-                class="text-on-surface-variant hover:text-error p-1 ml-2
-                       opacity-0 group-hover:opacity-100 transition-opacity">
-                <span class="material-symbols-outlined">delete</span>
-              </button>
-            </td>
+          <tr v-if="loading">
+            <td colspan="6" class="text-center py-12 text-on-surface-variant">Memuat data...</td>
           </tr>
+          <tr v-if="kendaraan.length === 0 && !loading">
+            <td colspan="6" class="text-center py-12 text-on-surface-variant">Tidak ada data kendaraan</td>
+          </tr>
+          <template v-if="!loading">
+            <tr v-for="k in kendaraan" :key="k.id"
+              class="border-b border-surface-variant hover:bg-surface-container-lowest/50 transition-colors group">
+              <td class="py-4 px-6 flex items-center gap-4">
+                <div class="w-16 h-12 rounded-lg bg-surface-container overflow-hidden flex items-center justify-center">
+                  <span class="material-symbols-outlined text-outline text-3xl">directions_car</span>
+                </div>
+                <span class="font-semibold text-primary">{{ k.nama }}</span>
+              </td>
+              <td class="py-4 px-6 text-on-surface">{{ k.tipe }}</td>
+              <td class="py-4 px-6 text-on-surface">{{ k.plat }}</td>
+              <td class="py-4 px-6 text-on-surface">{{ formatRupiah(k.harga) }}</td>
+              <td class="py-4 px-6">
+                <StatusBadge :status="k.status" />
+              </td>
+              <td class="py-4 px-6 text-right">
+                <button @click="openEdit(k)"
+                  class="text-on-surface-variant hover:text-secondary p-1
+                         opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+                <button @click="openHapus(k)"
+                  class="text-on-surface-variant hover:text-error p-1 ml-2
+                         opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+              </td>
+            </tr>
+          </template>
         </tbody>
       </table>
 
       <!-- Pagination -->
       <div class="py-4 px-6 border-t border-surface-variant flex justify-between items-center bg-surface-container-lowest/30">
         <span class="text-label-sm font-label-sm text-on-surface-variant">
-          Menampilkan {{ filteredKendaraan.length }} kendaraan
+          Menampilkan {{ kendaraan.length }} dari {{ pagination?.total || 0 }} kendaraan
         </span>
-        <div class="flex gap-2">
-          <button class="p-2 border border-outline-variant rounded-md text-on-surface-variant hover:bg-surface-container-low">
+        <div class="flex gap-2 items-center">
+          <button @click="currentPage > 1 && (currentPage--, fetchKendaraan())" :disabled="currentPage <= 1" class="p-2 border border-outline-variant rounded-md text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed">
             <span class="material-symbols-outlined" style="font-size:18px">chevron_left</span>
           </button>
-          <button class="p-2 border border-outline-variant rounded-md text-on-surface-variant hover:bg-surface-container-low">
+          <span class="px-3 py-2 text-label-md">{{ currentPage }} / {{ pagination?.last_page || 1 }}</span>
+          <button @click="currentPage < pagination?.last_page && (currentPage++, fetchKendaraan())" :disabled="currentPage >= (pagination?.last_page || 1)" class="p-2 border border-outline-variant rounded-md text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed">
             <span class="material-symbols-outlined" style="font-size:18px">chevron_right</span>
           </button>
         </div>
@@ -231,7 +240,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import api from '@/services/api'
 import { useToastStore } from '@/stores/toast'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import BaseModal   from '@/components/ui/BaseModal.vue'
@@ -248,29 +258,49 @@ const showHapus    = ref(false)
 const isEdit       = ref(false)
 const selectedKendaraan = ref(null)
 
+const loading = ref(false)
+const currentPage = ref(1)
+const pagination = ref(null)
+const kendaraan = ref([])
+
 const emptyForm = () => ({
   nama: '', tipe: '', plat: '', kapasitas: '', harga: '', tahun: '', warna: '',
   status: 'tersedia', deskripsi: '',
 })
 const formData = ref(emptyForm())
 
-// ── Sample data ──
-const kendaraan = ref([
-  { id: 1, nama: 'Toyota Fortuner',    tipe: 'SUV',   plat: 'B 1234 XYZ', harga: 1500000, status: 'tersedia'    },
-  { id: 2, nama: 'Honda Camry',        tipe: 'Sedan', plat: 'D 5678 ABC', harga: 2000000, status: 'disewa'      },
-  { id: 3, nama: 'Toyota Innova Zenix',tipe: 'MPV',   plat: 'L 9012 DEF', harga: 1200000, status: 'maintenance' },
-])
-
-const filteredKendaraan = computed(() =>
-  kendaraan.value.filter(k => {
-    const matchSearch = !search.value || k.nama.toLowerCase().includes(search.value.toLowerCase())
-    const matchTipe   = !filterTipe.value || k.tipe === filterTipe.value
-    const matchStatus = !filterStatus.value || k.status === filterStatus.value
-    return matchSearch && matchTipe && matchStatus
-  })
-)
-
 // ── Actions ──
+async function fetchKendaraan() {
+  loading.value = true
+  try {
+    const { data } = await api.get('/kendaraan', { 
+      params: { 
+        search: search.value, 
+        tipe: filterTipe.value, 
+        status: filterStatus.value, 
+        page: currentPage.value 
+      } 
+    })
+    kendaraan.value = data.data
+    pagination.value = data
+  } catch (e) {
+    toast.error('Error', 'Gagal memuat data kendaraan')
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(fetchKendaraan)
+
+let searchTimeout
+watch([search, filterTipe, filterStatus], () => {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1
+    fetchKendaraan()
+  }, 300)
+})
+
 function openTambah() {
   isEdit.value   = false
   formData.value = emptyForm()
@@ -288,22 +318,31 @@ function openHapus(k) {
   showHapus.value = true
 }
 
-function saveKendaraan() {
-  if (isEdit.value) {
-    const idx = kendaraan.value.findIndex(k => k.id === formData.value.id)
-    if (idx !== -1) kendaraan.value[idx] = { ...formData.value }
-    toast.success('Berhasil', 'Data kendaraan berhasil diperbarui.')
-  } else {
-    kendaraan.value.push({ ...formData.value, id: Date.now() })
-    toast.success('Berhasil', 'Kendaraan berhasil ditambahkan.')
+async function saveKendaraan() {
+  try {
+    if (isEdit.value) {
+      await api.put(`/kendaraan/${formData.value.id}`, formData.value)
+      toast.success('Berhasil', 'Data kendaraan berhasil diperbarui.')
+    } else {
+      await api.post('/kendaraan', formData.value)
+      toast.success('Berhasil', 'Kendaraan berhasil ditambahkan.')
+    }
+    showForm.value = false
+    fetchKendaraan()
+  } catch (e) {
+    toast.error('Error', e.response?.data?.message || 'Gagal menyimpan data.')
   }
-  showForm.value = false
 }
 
-function deleteKendaraan() {
-  kendaraan.value = kendaraan.value.filter(k => k.id !== selectedKendaraan.value.id)
-  toast.success('Dihapus', `${selectedKendaraan.value.nama} berhasil dihapus.`)
-  showHapus.value = false
+async function deleteKendaraan() {
+  try {
+    await api.delete(`/kendaraan/${selectedKendaraan.value.id}`)
+    toast.success('Dihapus', `${selectedKendaraan.value.nama} berhasil dihapus.`)
+    showHapus.value = false
+    fetchKendaraan()
+  } catch (e) {
+    toast.error('Error', 'Gagal menghapus kendaraan.')
+  }
 }
 
 function formatRupiah(n) {
@@ -315,6 +354,6 @@ function formatRupiah(n) {
 .form-input {
   @apply w-full bg-surface-container-lowest border border-outline/40 rounded-lg px-4 py-2.5
          text-body-md font-body-md text-on-surface placeholder:text-on-surface-variant/50
-         focus:outline-none input-glow transition-all;
+         focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all;
 }
 </style>

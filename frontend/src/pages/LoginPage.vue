@@ -93,7 +93,12 @@ async function handleLogin() {
     await auth.login(form.value.email, form.value.password)
     router.push('/dashboard')
   } catch (e) {
-    error.value = e.response?.data?.message || 'Email atau password salah.'
+    const data = e.response?.data
+    if (data?.errors) {
+      error.value = Object.values(data.errors).flat().join(' ')
+    } else {
+      error.value = data?.message || 'Email atau password salah.'
+    }
   } finally {
     loading.value = false
   }

@@ -16,18 +16,16 @@
     <!-- Filters -->
     <div class="bg-surface rounded-xl shadow-sm border border-outline-variant p-4 mb-6 flex justify-between items-center">
       <div class="flex gap-4">
+        <input v-model="search" type="text" placeholder="Cari pelanggan..." 
+          class="bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2
+                 text-body-md font-body-md focus:ring-2 focus:ring-secondary outline-none w-64" />
         <select v-model="filterLevel"
           class="bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2
                  text-body-md font-body-md focus:ring-2 focus:ring-secondary outline-none">
           <option value="">Semua Level</option>
-          <option>Gold</option><option>Silver</option><option>Basic</option>
-        </select>
-        <select v-model="filterStatus"
-          class="bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2
-                 text-body-md font-body-md focus:ring-2 focus:ring-secondary outline-none">
-          <option value="">Semua Status</option>
-          <option value="aktif">Aktif</option>
-          <option value="nonaktif">Nonaktif</option>
+          <option value="Gold">Gold</option>
+          <option value="Silver">Silver</option>
+          <option value="Basic">Basic</option>
         </select>
       </div>
       <button class="text-secondary font-label-md text-label-md flex items-center gap-2
@@ -50,7 +48,13 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-surface-variant">
-          <tr v-for="p in pelanggan" :key="p.id" class="hover:bg-surface-container-lowest transition-colors">
+          <tr v-if="loading">
+             <td colspan="5" class="px-6 py-8 text-center text-on-surface-variant">Memuat data...</td>
+          </tr>
+          <tr v-else-if="pelanggan.length === 0">
+             <td colspan="5" class="px-6 py-8 text-center text-on-surface-variant">Belum ada data pelanggan.</td>
+          </tr>
+          <tr v-else v-for="p in pelanggan" :key="p.id" class="hover:bg-surface-container-lowest transition-colors">
             <td class="px-6 py-4">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-secondary-fixed-dim text-secondary
@@ -65,25 +69,45 @@
               <div class="text-on-surface-variant text-label-sm font-label-sm">{{ p.telepon }}</div>
             </td>
             <td class="px-6 py-4">
-              <StatusBadge :status="p.level.toLowerCase()" />
+              <StatusBadge :status="p.level?.toLowerCase() || 'basic'" />
             </td>
-            <td class="px-6 py-4 text-center font-semibold text-on-surface">{{ p.totalBooking }}</td>
+            <td class="px-6 py-4 text-center font-semibold text-on-surface">{{ p.transaksi?.length || '-' }}</td>
             <td class="px-6 py-4 text-right">
-              <button @click="openEdit(p)" class="text-secondary hover:text-secondary-container p-2 transition-colors">
+              <button class="text-secondary hover:text-secondary-container p-2 transition-colors">
                 <span class="material-symbols-outlined">visibility</span>
               </button>
               <button @click="openEdit(p)" class="text-on-surface-variant hover:text-on-surface p-2 transition-colors">
                 <span class="material-symbols-outlined">edit</span>
+              </button>
+              <button @click="deletePelanggan(p.id)" class="text-error hover:text-error/80 p-2 transition-colors">
+                <span class="material-symbols-outlined">delete</span>
               </button>
             </td>
           </tr>
         </tbody>
       </table>
       <!-- Pagination -->
-      <div class="bg-surface border-t border-outline-variant px-6 py-4 flex items-center justify-between">
-        <span class="text-on-surface-variant text-label-sm font-label-sm">Menampilkan 1-{{ pelanggan.length }} dari {{ pelanggan.length }} pelanggan</span>
+      <div v-if="pagination" class="bg-surface border-t border-outline-variant px-6 py-4 flex items-center justify-between">
+        <span class="text-on-surface-variant text-label-sm font-label-sm">
+          Menampilkan {{ ((pagination.current_page - 1) * pagination.per_page) + (pelanggan.length > 0 ? 1 : 0) }}-{{ ((pagination.current_page - 1) * pagination.per_page) + pelanggan.length }} dari {{ pagination.total }} pelanggan
+        </span>
         <div class="flex gap-2">
-          <button class="px-3 py-1 rounded-lg bg-secondary text-on-primary font-bold text-label-md">1</button>
+          <button 
+            :disabled="!pagination.prev_page_url" 
+            @click="changePage(pagination.current_page - 1)"
+            class="px-3 py-1 rounded-lg text-secondary font-bold text-label-md disabled:opacity-50">
+            Prev
+          </button>
+          <button 
+            class="px-3 py-1 rounded-lg bg-secondary text-on-primary font-bold text-label-md">
+            {{ pagination.current_page }}
+          </button>
+          <button 
+            :disabled="!pagination.next_page_url" 
+            @click="changePage(pagination.current_page + 1)"
+            class="px-3 py-1 rounded-lg text-secondary font-bold text-label-md disabled:opacity-50">
+            Next
+          </button>
         </div>
       </div>
     </div>
@@ -111,7 +135,9 @@
         </FormField>
         <FormField label="Level Keanggotaan">
           <select v-model="formData.level" class="form-input">
-            <option>Basic</option><option>Silver</option><option>Gold</option>
+            <option value="Basic">Basic</option>
+            <option value="Silver">Silver</option>
+            <option value="Gold">Gold</option>
           </select>
         </FormField>
         <!-- Upload KTP -->
@@ -147,8 +173,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useToastStore } from '@/stores/toast'
+import api from '@/services/api'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import BaseModal   from '@/components/ui/BaseModal.vue'
 import FormField   from '@/components/ui/FormField.vue'
@@ -157,32 +184,87 @@ const toast = useToastStore()
 const showForm = ref(false)
 const isEdit   = ref(false)
 const filterLevel  = ref('')
-const filterStatus = ref('')
+const search = ref('')
 
 const emptyForm = () => ({ nama:'', email:'', telepon:'', alamat:'', level:'Basic' })
 const formData  = ref(emptyForm())
 
-const pelanggan = ref([
-  { id:1, nama:'Ahmad Santoso', email:'ahmad.s@email.com', telepon:'+62 812-3456-7890', level:'Gold',   totalBooking:24 },
-  { id:2, nama:'Budi Wijaya',   email:'budi.w@email.com',  telepon:'+62 856-1234-5678', level:'Silver', totalBooking:12 },
-  { id:3, nama:'Citra Dewi',    email:'citra.d@email.com', telepon:'+62 811-9876-5432', level:'Silver', totalBooking:8  },
-])
+const pelanggan = ref([])
+const loading = ref(false)
+const currentPage = ref(1)
+const pagination = ref(null)
+
+const fetchPelanggan = async () => {
+  loading.value = true
+  try {
+    const res = await api.get('/pelanggan', {
+      params: {
+        search: search.value,
+        level: filterLevel.value,
+        page: currentPage.value
+      }
+    })
+    pelanggan.value = res.data.data
+    pagination.value = res.data
+  } catch (error) {
+    toast.error('Gagal', 'Tidak dapat memuat data pelanggan.')
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(fetchPelanggan)
+
+let debounceTimer
+watch([search, filterLevel], () => {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    currentPage.value = 1
+    fetchPelanggan()
+  }, 300)
+})
+
+const changePage = (page) => {
+  currentPage.value = page
+  fetchPelanggan()
+}
 
 function initials(name) {
+  if (!name) return 'U'
   return name.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase()
 }
 function openTambah() { isEdit.value = false; formData.value = emptyForm(); showForm.value = true }
 function openEdit(p)  { isEdit.value = true;  formData.value = { ...p };  showForm.value = true }
-function savePelanggan() {
-  if (isEdit.value) {
-    const i = pelanggan.value.findIndex(p => p.id === formData.value.id)
-    if (i !== -1) pelanggan.value[i] = { ...formData.value }
-    toast.success('Berhasil', 'Data pelanggan diperbarui.')
-  } else {
-    pelanggan.value.push({ ...formData.value, id: Date.now(), totalBooking: 0 })
-    toast.success('Berhasil', 'Pelanggan baru ditambahkan.')
+
+async function savePelanggan() {
+  try {
+    if (isEdit.value) {
+      await api.put(`/pelanggan/${formData.value.id}`, formData.value)
+      toast.success('Berhasil', 'Data pelanggan diperbarui.')
+    } else {
+      await api.post('/pelanggan', formData.value)
+      toast.success('Berhasil', 'Pelanggan baru ditambahkan.')
+    }
+    showForm.value = false
+    fetchPelanggan()
+  } catch (error) {
+    toast.error('Gagal', 'Tidak dapat menyimpan data pelanggan.')
   }
-  showForm.value = false
+}
+
+async function deletePelanggan(id) {
+  if (confirm('Apakah Anda yakin ingin menghapus pelanggan ini?')) {
+    try {
+      await api.delete(`/pelanggan/${id}`)
+      toast.success('Berhasil', 'Pelanggan dihapus.')
+      if (pelanggan.value.length === 1 && currentPage.value > 1) {
+        currentPage.value--
+      }
+      fetchPelanggan()
+    } catch (error) {
+      toast.error('Gagal', 'Tidak dapat menghapus pelanggan.')
+    }
+  }
 }
 </script>
 
@@ -190,6 +272,6 @@ function savePelanggan() {
 .form-input {
   @apply w-full bg-surface-container-lowest border border-outline/40 rounded-lg px-4 py-2.5
          text-body-md font-body-md text-on-surface placeholder:text-on-surface-variant/50
-         focus:outline-none input-glow transition-all;
+         focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all;
 }
 </style>

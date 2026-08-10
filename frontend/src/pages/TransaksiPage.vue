@@ -21,7 +21,7 @@
             class="px-3 py-2 border border-outline-variant rounded-lg text-body-md focus:border-secondary outline-none bg-white">
             <option value="">Semua Status</option>
             <option value="selesai">Selesai</option>
-            <option value="pending">Pending</option>
+            <option value="menunggu">Menunggu</option>
             <option value="aktif">Aktif</option>
             <option value="dibatalkan">Dibatalkan</option>
           </select>
@@ -49,11 +49,17 @@
           </tr>
         </thead>
         <tbody class="text-body-md font-body-md divide-y divide-outline-variant/20">
-          <tr v-for="t in transaksi" :key="t.id" class="hover:bg-surface-container-lowest transition-colors">
+          <tr v-if="loading">
+            <td colspan="7" class="py-8 text-center text-on-surface-variant">Memuat data transaksi...</td>
+          </tr>
+          <tr v-else-if="transaksi.length === 0">
+            <td colspan="7" class="py-8 text-center text-on-surface-variant">Belum ada data transaksi.</td>
+          </tr>
+          <tr v-else v-for="t in transaksi" :key="t.id" class="hover:bg-surface-container-lowest transition-colors">
             <td class="py-4 px-6 font-semibold text-primary">{{ t.id }}</td>
-            <td class="py-4 px-6 text-on-surface-variant">{{ t.tanggal }}</td>
-            <td class="py-4 px-6">{{ t.pelanggan }}</td>
-            <td class="py-4 px-6">{{ t.kendaraan }}</td>
+            <td class="py-4 px-6 text-on-surface-variant">{{ formatDate(t.tanggal_mulai) }} - {{ formatDate(t.tanggal_akhir) }}</td>
+            <td class="py-4 px-6">{{ t.pelanggan?.nama }}</td>
+            <td class="py-4 px-6">{{ t.kendaraan?.nama }}</td>
             <td class="py-4 px-6">{{ formatRupiah(t.total) }}</td>
             <td class="py-4 px-6 text-center">
               <StatusBadge :status="t.status" />
@@ -69,9 +75,21 @@
       </table>
       <!-- Pagination -->
       <div class="flex items-center justify-between px-6 py-4 border-t border-outline-variant/30">
-        <span class="text-label-sm font-label-sm text-on-surface-variant">Menampilkan 1-{{ transaksi.length }}</span>
+        <span class="text-label-sm font-label-sm text-on-surface-variant">
+          Menampilkan {{ pagination?.from || 0 }}-{{ pagination?.to || 0 }} dari {{ pagination?.total || 0 }}
+        </span>
         <div class="flex gap-2">
-          <button class="w-8 h-8 rounded bg-secondary text-on-secondary font-bold text-label-sm flex items-center justify-center">1</button>
+          <button @click="currentPage--" :disabled="currentPage === 1"
+            class="w-8 h-8 rounded bg-surface-container-high text-on-surface hover:bg-surface-container-highest disabled:opacity-50 font-bold text-label-sm flex items-center justify-center">
+            &lt;
+          </button>
+          <button class="w-8 h-8 rounded bg-secondary text-on-secondary font-bold text-label-sm flex items-center justify-center">
+            {{ currentPage }}
+          </button>
+          <button @click="currentPage++" :disabled="currentPage === pagination?.last_page || !pagination?.last_page"
+            class="w-8 h-8 rounded bg-surface-container-high text-on-surface hover:bg-surface-container-highest disabled:opacity-50 font-bold text-label-sm flex items-center justify-center">
+            &gt;
+          </button>
         </div>
       </div>
     </div>
@@ -95,21 +113,21 @@
             </div>
             <div>
               <p class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Informasi Kendaraan</p>
-              <p class="text-body-lg font-body-lg font-semibold text-on-surface">{{ selected.kendaraan }}</p>
-              <p class="text-label-md font-label-md text-on-surface-variant">SUV • 7 Penumpang</p>
+              <p class="text-body-lg font-body-lg font-semibold text-on-surface">{{ selected.kendaraan?.nama }}</p>
+              <p class="text-label-md font-label-md text-on-surface-variant">{{ selected.kendaraan?.tipe }} • {{ selected.kendaraan?.kapasitas }} Penumpang</p>
             </div>
           </div>
           <div class="bg-[#F4F5F7] rounded-lg p-5 border border-outline-variant/20 flex gap-4 items-start">
             <div class="w-16 h-16 rounded-full bg-secondary-fixed-dim text-secondary
                         flex items-center justify-center font-bold text-xl shrink-0">
-              {{ initials(selected.pelanggan) }}
+              {{ initials(selected.pelanggan?.nama) }}
             </div>
             <div>
               <p class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Informasi Pelanggan</p>
-              <p class="text-body-lg font-body-lg font-semibold text-on-surface">{{ selected.pelanggan }}</p>
+              <p class="text-body-lg font-body-lg font-semibold text-on-surface">{{ selected.pelanggan?.nama }}</p>
               <p class="text-label-md font-label-md text-on-surface-variant flex items-center gap-1">
                 <span class="material-symbols-outlined" style="font-size:14px">mail</span>
-                pelanggan@email.com
+                {{ selected.pelanggan?.email }}
               </p>
             </div>
           </div>
@@ -121,15 +139,15 @@
           <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div>
               <p class="text-label-sm font-label-sm text-on-surface-variant mb-1">Tanggal Sewa</p>
-              <p class="text-label-md font-medium text-on-surface">{{ selected.tanggal }}</p>
+              <p class="text-label-md font-medium text-on-surface">{{ formatDate(selected.tanggal_mulai) }}</p>
             </div>
             <div>
               <p class="text-label-sm font-label-sm text-on-surface-variant mb-1">Tanggal Kembali</p>
-              <p class="text-label-md font-medium text-on-surface">{{ selected.tanggalKembali }}</p>
+              <p class="text-label-md font-medium text-on-surface">{{ formatDate(selected.tanggal_akhir) }}</p>
             </div>
             <div>
               <p class="text-label-sm font-label-sm text-on-surface-variant mb-1">Durasi</p>
-              <p class="text-label-md font-medium text-on-surface">{{ selected.durasi }}</p>
+              <p class="text-label-md font-medium text-on-surface">{{ getDurasi(selected.tanggal_mulai, selected.tanggal_akhir) }}</p>
             </div>
             <div>
               <p class="text-label-sm font-label-sm text-on-surface-variant mb-1">Total Biaya</p>
@@ -178,7 +196,7 @@
           <span class="material-symbols-outlined" style="font-size:18px">task_alt</span>
           Tandai Dikembalikan
         </button>
-        <template v-if="selected?.status === 'pending'">
+        <template v-if="selected?.status === 'menunggu'">
           <button @click="tolakTransaksi"
             class="px-5 py-2.5 rounded border border-error text-error hover:bg-error-container/20
                    text-label-md font-label-md font-semibold transition-colors">
@@ -196,8 +214,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useToastStore } from '@/stores/toast'
+import api from '@/services/api'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import BaseModal   from '@/components/ui/BaseModal.vue'
 
@@ -209,6 +228,11 @@ const filterStatus = ref('')
 const showDetail   = ref(false)
 const selected     = ref(null)
 
+const transaksi    = ref([])
+const loading      = ref(false)
+const currentPage  = ref(1)
+const pagination   = ref({})
+
 const steps       = ['Menunggu', 'Dikonfirmasi', 'Aktif', 'Dikembalikan']
 const statusToStep = { menunggu:0, pending:0, aktif:2, selesai:3, dikembalikan:3, dibatalkan:0 }
 const currentStep  = computed(() => statusToStep[selected.value?.status?.toLowerCase()] ?? 0)
@@ -217,32 +241,102 @@ const stepProgress = computed(() => {
   return `calc(${pct}% - 16px)`
 })
 
-const transaksi = ref([
-  { id:'TRX-98231', tanggal:'12 Okt 2024', tanggalKembali:'15 Okt 2024', durasi:'3 Hari', pelanggan:'Budi Santoso',  kendaraan:'Toyota Avanza 2023',  total:1500000, status:'selesai'    },
-  { id:'TRX-98232', tanggal:'14 Okt 2024', tanggalKembali:'16 Okt 2024', durasi:'2 Hari', pelanggan:'Siti Aminah',   kendaraan:'Honda Brio 2022',     total:900000,  status:'aktif'      },
-  { id:'TRX-98233', tanggal:'15 Okt 2024', tanggalKembali:'17 Okt 2024', durasi:'2 Hari', pelanggan:'Agus Wijaya',   kendaraan:'Mitsubishi Xpander',  total:1800000, status:'pending'    },
-  { id:'TRX-98234', tanggal:'16 Okt 2024', tanggalKembali:'18 Okt 2024', durasi:'2 Hari', pelanggan:'Dewi Lestari',  kendaraan:'Toyota Fortuner',     total:3000000, status:'dibatalkan' },
-])
+async function fetchTransaksi() {
+  loading.value = true
+  try {
+    const response = await api.get('/transaksi', {
+      params: {
+        status: filterStatus.value,
+        tanggal_mulai: filterMulai.value,
+        tanggal_akhir: filterAkhir.value,
+        page: currentPage.value
+      }
+    })
+    transaksi.value = response.data.data
+    pagination.value = response.data
+  } catch (error) {
+    console.error('Error fetching transaksi:', error)
+    toast.error('Gagal', 'Tidak dapat memuat data transaksi')
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchTransaksi()
+})
+
+watch([filterMulai, filterAkhir, filterStatus], () => {
+  currentPage.value = 1
+  fetchTransaksi()
+})
+
+watch(currentPage, () => {
+  fetchTransaksi()
+})
 
 function initials(name) {
-  return name?.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase()
+  return name?.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase() || ''
 }
-function openDetail(t) { selected.value = t; showDetail.value = true }
-function formatRupiah(n) { return 'Rp ' + Number(n).toLocaleString('id-ID') }
 
-function tandaiKembali() {
-  selected.value.status = 'selesai'
-  toast.success('Berhasil', 'Kendaraan telah ditandai dikembalikan.')
-  showDetail.value = false
+function formatDate(dateStr) {
+  if (!dateStr) return '-'
+  const date = new Date(dateStr)
+  return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(date)
 }
-function konfirmasiTransaksi() {
-  selected.value.status = 'aktif'
-  toast.success('Dikonfirmasi', 'Transaksi berhasil dikonfirmasi.')
-  showDetail.value = false
+
+function getDurasi(start, end) {
+  if (!start || !end) return '-'
+  const s = new Date(start)
+  const e = new Date(end)
+  const diffTime = Math.abs(e - s)
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  return `${diffDays} Hari`
 }
-function tolakTransaksi() {
-  selected.value.status = 'dibatalkan'
-  toast.error('Ditolak', 'Transaksi telah ditolak.')
-  showDetail.value = false
+
+function openDetail(t) { 
+  selected.value = t
+  showDetail.value = true 
+}
+
+function formatRupiah(n) { 
+  if (!n) return 'Rp 0'
+  return 'Rp ' + Number(n).toLocaleString('id-ID') 
+}
+
+async function tandaiKembali() {
+  try {
+    await api.patch(`/transaksi/${selected.value.id}/selesai`)
+    toast.success('Berhasil', 'Kendaraan telah ditandai dikembalikan.')
+    showDetail.value = false
+    fetchTransaksi()
+  } catch (error) {
+    console.error('Error finishing transaksi:', error)
+    toast.error('Gagal', 'Gagal menyelesaikan transaksi')
+  }
+}
+
+async function konfirmasiTransaksi() {
+  try {
+    await api.patch(`/transaksi/${selected.value.id}/konfirmasi`)
+    toast.success('Dikonfirmasi', 'Transaksi berhasil dikonfirmasi.')
+    showDetail.value = false
+    fetchTransaksi()
+  } catch (error) {
+    console.error('Error confirming transaksi:', error)
+    toast.error('Gagal', 'Gagal mengkonfirmasi transaksi')
+  }
+}
+
+async function tolakTransaksi() {
+  try {
+    await api.patch(`/transaksi/${selected.value.id}`, { status: 'dibatalkan' })
+    toast.error('Ditolak', 'Transaksi telah ditolak.')
+    showDetail.value = false
+    fetchTransaksi()
+  } catch (error) {
+    console.error('Error rejecting transaksi:', error)
+    toast.error('Gagal', 'Gagal menolak transaksi')
+  }
 }
 </script>

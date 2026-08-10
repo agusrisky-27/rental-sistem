@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Pengembalian;
 use App\Models\Transaksi;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class PengembalianController extends Controller
 {
@@ -26,11 +27,11 @@ class PengembalianController extends Controller
 
         $transaksi = Transaksi::findOrFail($data['transaksi_id']);
 
-        // Hitung denda
-        $rencana = $transaksi->tanggal_akhir;
-        $aktual  = $data['tanggal_kembali'];
-        $telat   = max(0, now()->parse($aktual)->diffInDays($rencana, false) * -1);
-        $denda   = $telat > 0 ? ($transaksi->kendaraan->harga * $telat) : 0;
+        // Hitung denda keterlambatan
+        $rencanaDate = Carbon::parse($transaksi->tanggal_akhir);
+        $aktualDate  = Carbon::parse($data['tanggal_kembali']);
+        $telat       = $aktualDate->gt($rencanaDate) ? $aktualDate->diffInDays($rencanaDate) : 0;
+        $denda       = $telat > 0 ? ($transaksi->kendaraan->harga * $telat) : 0;
 
         $pengembalian = Pengembalian::create([
             ...$data,

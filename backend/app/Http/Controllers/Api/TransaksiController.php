@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Transaksi;
 use App\Models\Kendaraan;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class TransaksiController extends Controller
 {
@@ -30,8 +31,8 @@ class TransaksiController extends Controller
         ]);
 
         $kendaraan = Kendaraan::findOrFail($data['kendaraan_id']);
-        $durasi    = now()->parse($data['tanggal_mulai'])->diffInDays($data['tanggal_akhir']);
-        $total     = $kendaraan->harga * $durasi;
+        $durasi    = Carbon::parse($data['tanggal_mulai'])->diffInDays(Carbon::parse($data['tanggal_akhir']));
+        $total     = $kendaraan->harga * max(1, $durasi);
 
         $transaksi = Transaksi::create([
             ...$data,

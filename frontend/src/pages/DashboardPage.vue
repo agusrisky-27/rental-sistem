@@ -30,7 +30,9 @@
           </div>
           <span class="text-label-md font-label-md text-on-surface-variant">Total Pendapatan</span>
         </div>
-        <div class="text-headline-md font-headline-md text-primary">Rp 48.5M</div>
+        <div class="text-headline-md font-headline-md text-primary">
+          {{ loading ? '...' : formatRupiah(stats?.total_pendapatan) }}
+        </div>
         <div class="mt-2 text-label-sm font-label-sm text-secondary flex items-center gap-1">
           <span class="material-symbols-outlined" style="font-size:14px">trending_up</span>
           +15% dari bulan lalu
@@ -47,7 +49,10 @@
           </div>
           <span class="text-label-md font-label-md text-on-surface-variant">Kendaraan Disewa</span>
         </div>
-        <div class="text-headline-md font-headline-md text-primary">86 / 124</div>
+        <div class="text-headline-md font-headline-md text-primary">
+          <span v-if="loading">...</span>
+          <span v-else>{{ stats?.kendaraan_disewa }} / {{ stats?.total_kendaraan }}</span>
+        </div>
         <div class="mt-2 text-label-sm font-label-sm text-on-surface-variant flex items-center gap-1">
           Sedang digunakan hari ini
         </div>
@@ -63,7 +68,9 @@
           </div>
           <span class="text-label-md font-label-md text-on-surface-variant">Pengguna Baru</span>
         </div>
-        <div class="text-headline-md font-headline-md text-primary">342</div>
+        <div class="text-headline-md font-headline-md text-primary">
+          {{ loading ? '...' : stats?.pengguna_baru }}
+        </div>
         <div class="mt-2 text-label-sm font-label-sm text-secondary flex items-center gap-1">
           <span class="material-symbols-outlined" style="font-size:14px">trending_up</span>
           +8% minggu ini
@@ -109,16 +116,24 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-outline-variant/30">
-            <tr v-for="item in recentActivity" :key="item.id"
+            <tr v-if="loading">
+              <td colspan="5" class="p-4 text-center py-8">
+                <span class="material-symbols-outlined animate-spin text-primary" style="font-size: 32px;">progress_activity</span>
+              </td>
+            </tr>
+            <tr v-else-if="stats?.transaksi_terbaru?.length === 0">
+              <td colspan="5" class="p-4 text-center py-8 text-on-surface-variant">Belum ada transaksi</td>
+            </tr>
+            <tr v-else v-for="item in stats?.transaksi_terbaru" :key="item.id"
               class="hover:bg-surface-container-low/50 transition-colors">
               <td class="p-4 flex items-center gap-3">
                 <div class="w-10 h-10 rounded-md bg-surface-variant flex items-center justify-center">
                   <span class="material-symbols-outlined text-outline">directions_car</span>
                 </div>
-                <span class="font-semibold text-primary">{{ item.kendaraan }}</span>
+                <span class="font-semibold text-primary">{{ item.kendaraan?.nama }}</span>
               </td>
-              <td class="p-4 text-on-surface-variant">{{ item.pelanggan }}</td>
-              <td class="p-4 text-on-surface-variant">{{ item.tanggal }}</td>
+              <td class="p-4 text-on-surface-variant">{{ item.pelanggan?.nama }}</td>
+              <td class="p-4 text-on-surface-variant">{{ item.tanggal_mulai }} - {{ item.tanggal_akhir }}</td>
               <td class="p-4">
                 <StatusBadge :status="item.status" />
               </td>
@@ -136,11 +151,32 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+import api from '@/services/api'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 
-const recentActivity = [
-  { id: 1, kendaraan: 'Toyota Avanza 2023', pelanggan: 'Budi Santoso',  tanggal: '12 Okt - 15 Okt 2024', status: 'aktif'   },
-  { id: 2, kendaraan: 'Honda CR-V',          pelanggan: 'Siti Aminah',   tanggal: '10 Okt - 11 Okt 2024', status: 'selesai' },
-  { id: 3, kendaraan: 'Mitsubishi Xpander',  pelanggan: 'Agus Wijaya',   tanggal: '09 Okt - 10 Okt 2024', status: 'selesai' },
-]
+const stats = ref(null)
+const loading = ref(true)
+
+function formatRupiah(n) {
+  if (!n) return 'Rp 0'
+  if (n >= 1000000) return 'Rp ' + (n / 1000000).toFixed(1) + 'M'
+  return 'Rp ' + Number(n).toLocaleString('id-ID')
+}
+
+async function fetchStats() {
+  loading.value = true
+  try {
+    const { data } = await api.get('/dashboard/stats')
+    stats.value = data
+  } catch (error) {
+    console.error('Failed to fetch stats:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchStats()
+})
 </script>

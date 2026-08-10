@@ -5,7 +5,7 @@
       ? 'bg-secondary-fixed text-secondary'
       : 'text-primary hover:text-secondary hover:bg-surface-container-low'">
     <span class="material-symbols-outlined"
-      :style="isActive ? \"font-variation-settings: 'FILL' 1\" : ''">
+      :style="isActive ? { fontVariationSettings: `'FILL' 1` } : {}">
       {{ icon }}
     </span>
     <span>{{ label }}</span>
