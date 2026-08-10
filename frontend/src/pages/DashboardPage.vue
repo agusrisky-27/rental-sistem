@@ -21,75 +21,72 @@
     <!-- Stats grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-12">
       <!-- Card: Pendapatan -->
-      <div class="glass-card rounded-xl p-6 shadow-[0px_4px_20px_rgba(15,23,42,0.05)] relative overflow-hidden group">
-        <div class="absolute -right-6 -top-6 w-24 h-24 bg-primary-fixed/30 rounded-full blur-xl
-                    group-hover:bg-primary-fixed/50 transition-all"></div>
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary">
-            <span class="material-symbols-outlined">payments</span>
+      <div class="glass-card rounded-xl p-6 shadow-[0px_4px_20px_rgba(15,23,42,0.05)] relative overflow-hidden">
+        <div class="flex justify-between items-start mb-4">
+          <p class="text-label-md font-label-md text-on-surface-variant">Total Pendapatan</p>
+          <div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center">
+            <span class="material-symbols-outlined text-secondary">payments</span>
           </div>
-          <span class="text-label-md font-label-md text-on-surface-variant">Total Pendapatan</span>
         </div>
-        <div class="text-headline-md font-headline-md text-primary">
+        <h3 class="text-headline-lg font-headline-lg text-primary">
           {{ loading ? '...' : formatRupiah(stats?.total_pendapatan) }}
-        </div>
-        <div class="mt-2 text-label-sm font-label-sm text-secondary flex items-center gap-1">
+        </h3>
+        <p class="text-label-sm font-label-sm mt-2 flex items-center gap-1 text-secondary">
           <span class="material-symbols-outlined" style="font-size:14px">trending_up</span>
           +15% dari bulan lalu
-        </div>
+        </p>
       </div>
 
       <!-- Card: Kendaraan -->
-      <div class="glass-card rounded-xl p-6 shadow-[0px_4px_20px_rgba(15,23,42,0.05)] relative overflow-hidden group">
-        <div class="absolute -right-6 -top-6 w-24 h-24 bg-error-container/30 rounded-full blur-xl
-                    group-hover:bg-error-container/50 transition-all"></div>
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface">
-            <span class="material-symbols-outlined">directions_car</span>
+      <div class="glass-card rounded-xl p-6 shadow-[0px_4px_20px_rgba(15,23,42,0.05)] relative overflow-hidden">
+        <div class="flex justify-between items-start mb-4">
+          <p class="text-label-md font-label-md text-on-surface-variant">Kendaraan Disewa</p>
+          <div class="w-10 h-10 rounded-full bg-error-container/50 flex items-center justify-center">
+            <span class="material-symbols-outlined text-on-error-container">directions_car</span>
           </div>
-          <span class="text-label-md font-label-md text-on-surface-variant">Kendaraan Disewa</span>
         </div>
-        <div class="text-headline-md font-headline-md text-primary">
+        <h3 class="text-headline-lg font-headline-lg text-primary">
           <span v-if="loading">...</span>
           <span v-else>{{ stats?.kendaraan_disewa }} / {{ stats?.total_kendaraan }}</span>
-        </div>
-        <div class="mt-2 text-label-sm font-label-sm text-on-surface-variant flex items-center gap-1">
+        </h3>
+        <p class="text-label-sm font-label-sm mt-2 flex items-center gap-1 text-on-surface-variant">
           Sedang digunakan hari ini
-        </div>
+        </p>
       </div>
 
       <!-- Card: Pengguna -->
-      <div class="glass-card rounded-xl p-6 shadow-[0px_4px_20px_rgba(15,23,42,0.05)] relative overflow-hidden group">
-        <div class="absolute -right-6 -top-6 w-24 h-24 bg-secondary-fixed-dim/30 rounded-full blur-xl
-                    group-hover:bg-secondary-fixed-dim/50 transition-all"></div>
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-full bg-primary-fixed-dim flex items-center justify-center text-primary-container">
-            <span class="material-symbols-outlined">group_add</span>
+      <div class="glass-card rounded-xl p-6 shadow-[0px_4px_20px_rgba(15,23,42,0.05)] relative overflow-hidden">
+        <div class="flex justify-between items-start mb-4">
+          <p class="text-label-md font-label-md text-on-surface-variant">Pengguna Baru</p>
+          <div class="w-10 h-10 rounded-full bg-primary-fixed/50 flex items-center justify-center">
+            <span class="material-symbols-outlined text-secondary">group_add</span>
           </div>
-          <span class="text-label-md font-label-md text-on-surface-variant">Pengguna Baru</span>
         </div>
-        <div class="text-headline-md font-headline-md text-primary">
+        <h3 class="text-headline-lg font-headline-lg text-primary">
           {{ loading ? '...' : stats?.pengguna_baru }}
-        </div>
-        <div class="mt-2 text-label-sm font-label-sm text-secondary flex items-center gap-1">
+        </h3>
+        <p class="text-label-sm font-label-sm mt-2 flex items-center gap-1 text-secondary">
           <span class="material-symbols-outlined" style="font-size:14px">trending_up</span>
           +8% minggu ini
-        </div>
+        </p>
       </div>
 
       <!-- Card: Quick action -->
-      <div class="glass-card rounded-xl p-6 shadow-[0px_4px_20px_rgba(15,23,42,0.05)] relative overflow-hidden group flex flex-col justify-between">
-        <div class="absolute -right-6 -top-6 w-24 h-24 bg-secondary-fixed/30 rounded-full blur-xl
-                    group-hover:bg-secondary-fixed/50 transition-all"></div>
+      <div class="glass-card rounded-xl p-6 shadow-[0px_4px_20px_rgba(15,23,42,0.05)] relative overflow-hidden flex flex-col justify-between">
         <div>
-          <h3 class="text-headline-md font-headline-md text-primary mb-2">Transaksi Cepat</h3>
-          <p class="text-body-md font-body-md text-on-surface-variant">
-            Buat pesanan baru untuk pelanggan secara langsung.
+          <div class="flex justify-between items-start mb-4">
+            <p class="text-label-md font-label-md text-on-surface-variant">Transaksi Cepat</p>
+            <div class="w-10 h-10 rounded-full bg-tertiary-fixed-dim/30 flex items-center justify-center">
+              <span class="material-symbols-outlined text-on-tertiary-container">add_circle</span>
+            </div>
+          </div>
+          <p class="text-body-md font-body-md text-on-surface-variant leading-tight mb-2">
+            Buat pesanan baru untuk pelanggan.
           </p>
         </div>
         <RouterLink to="/transaksi"
-          class="mt-4 w-full bg-secondary text-on-secondary font-bold text-label-md py-3
-                 rounded-lg hover:bg-secondary-container transition-colors shadow-md text-center relative z-10 block">
+          class="mt-auto w-full bg-secondary text-on-secondary font-bold text-label-md py-3
+                 rounded-lg hover:bg-secondary-container transition-colors shadow-md text-center block">
           + Buat Pesanan
         </RouterLink>
       </div>

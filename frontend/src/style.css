@@ -47,3 +47,51 @@
 .animate-slide-in-right {
   animation: slideInRight 0.3s ease-out forwards;
 }
+
+/* Global Dark Mode Overrides */
+html.dark body {
+  background-color: #111827 !important;
+  color: #f9fafb !important;
+}
+html.dark .bg-surface, 
+html.dark .bg-surface-container-low, 
+html.dark .bg-surface-container-lowest, 
+html.dark .bg-surface-container-high,
+html.dark .bg-surface-container-highest,
+html.dark .bg-surface-container,
+html.dark .bg-surface-bright {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+  border-color: #374151 !important;
+}
+html.dark .text-on-surface, 
+html.dark .text-primary, 
+html.dark .text-on-surface-variant {
+  color: #f9fafb !important;
+}
+html.dark .border-surface-variant, 
+html.dark .border-outline-variant,
+html.dark .border-outline {
+  border-color: #374151 !important;
+}
+html.dark .glass-card {
+  background: rgba(31, 41, 55, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+html.dark input, 
+html.dark select, 
+html.dark textarea {
+  background-color: #374151 !important;
+  color: #f9fafb !important;
+  border-color: #4b5563 !important;
+}
+html.dark table th {
+  background-color: #111827 !important;
+  color: #d1d5db !important;
+}
+html.dark table tr:hover td {
+  background-color: #374151 !important;
+}
+html.dark .material-symbols-outlined {
+  color: currentColor;
+}

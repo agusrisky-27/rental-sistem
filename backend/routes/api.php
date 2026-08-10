@@ -33,4 +33,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/transaksi/{transaksi}/selesai',       [TransaksiController::class,    'selesai']);
     Route::patch('/pembayaran/{pembayaran}/verifikasi',  [PembayaranController::class,   'verifikasi']);
     Route::patch('/pengembalian/{pengembalian}/terima',  [PengembalianController::class, 'terima']);
+    Route::get('/settings', [\App\Http\Controllers\SettingController::class, 'index']);
+    Route::patch('/settings', [\App\Http\Controllers\SettingController::class, 'update']);
+
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index']);
+    Route::patch('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'readAll']);
+    Route::patch('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read']);
+
+    Route::patch('/auth/profile', [AuthController::class, 'updateProfile']);
+    Route::patch('/auth/password', [AuthController::class, 'updatePassword']);
 });

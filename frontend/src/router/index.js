@@ -12,6 +12,7 @@ import PelangganPage  from '@/pages/PelangganPage.vue'
 import TransaksiPage  from '@/pages/TransaksiPage.vue'
 import PembayaranPage from '@/pages/PembayaranPage.vue'
 import PengembalianPage from '@/pages/PengembalianPage.vue'
+import PengaturanPage from '@/pages/PengaturanPage.vue'
 
 const routes = [
   {
@@ -32,6 +33,7 @@ const routes = [
       { path: 'transaksi', name: 'Transaksi',   component: TransaksiPage   },
       { path: 'pembayaran',name: 'Pembayaran',  component: PembayaranPage  },
       { path: 'pengembalian', name: 'Pengembalian', component: PengembalianPage },
+      { path: 'pengaturan', name: 'Pengaturan', component: PengaturanPage },
     ],
   },
 ]

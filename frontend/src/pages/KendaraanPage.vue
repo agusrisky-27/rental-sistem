@@ -57,7 +57,9 @@
         </thead>
         <tbody class="text-body-md font-body-md">
           <tr v-if="loading">
-            <td colspan="6" class="text-center py-12 text-on-surface-variant">Memuat data...</td>
+            <td colspan="6" class="p-6">
+              <SkeletonLoader type="table" :rows="5" />
+            </td>
           </tr>
           <tr v-if="kendaraan.length === 0 && !loading">
             <td colspan="6" class="text-center py-12 text-on-surface-variant">Tidak ada data kendaraan</td>
@@ -126,6 +128,7 @@
             <FormField label="Nama Kendaraan">
               <input v-model="formData.nama" type="text" placeholder="Contoh: Toyota Avanza G"
                 class="form-input" />
+              <span v-if="errors.nama" class="text-label-sm text-error mt-1">{{ errors.nama }}</span>
             </FormField>
             <FormField label="Tipe Kendaraan">
               <select v-model="formData.tipe" class="form-input">
@@ -133,9 +136,11 @@
                 <option>MPV</option><option>SUV</option><option>Sedan</option>
                 <option>Hatchback</option><option>Minibus</option>
               </select>
+              <span v-if="errors.tipe" class="text-label-sm text-error mt-1">{{ errors.tipe }}</span>
             </FormField>
             <FormField label="Nomor Plat">
               <input v-model="formData.plat" type="text" placeholder="B 1234 ABC" class="form-input uppercase" />
+              <span v-if="errors.plat" class="text-label-sm text-error mt-1">{{ errors.plat }}</span>
             </FormField>
             <FormField label="Kapasitas">
               <div class="relative">
@@ -143,6 +148,7 @@
                   class="form-input pr-16" />
                 <span class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-label-md">orang</span>
               </div>
+              <span v-if="errors.kapasitas" class="text-label-sm text-error mt-1">{{ errors.kapasitas }}</span>
             </FormField>
           </div>
 
@@ -151,11 +157,13 @@
             <FormField label="Harga per Hari">
               <div class="relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-label-md">Rp</span>
-                <input v-model="formData.harga" type="text" placeholder="0" class="form-input pl-10" />
+                <input v-model="formData.harga" type="number" placeholder="0" class="form-input pl-10" />
               </div>
+              <span v-if="errors.harga" class="text-label-sm text-error mt-1">{{ errors.harga }}</span>
             </FormField>
             <FormField label="Tahun">
               <input v-model="formData.tahun" type="number" placeholder="2024" class="form-input" />
+              <span v-if="errors.tahun" class="text-label-sm text-error mt-1">{{ errors.tahun }}</span>
             </FormField>
             <FormField label="Warna">
               <input v-model="formData.warna" type="text" placeholder="Hitam Metalik" class="form-input" />
@@ -179,17 +187,28 @@
         <FormField label="Foto Kendaraan">
           <div class="border-2 border-dashed border-outline/40 rounded-xl bg-surface-container-lowest
                       hover:bg-surface-container-low transition-colors flex flex-col items-center
-                      justify-center py-8 px-4 cursor-pointer group">
-            <div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center
+                      justify-center py-8 px-4 cursor-pointer group relative overflow-hidden"
+               @click="$refs.fotoInput.click()"
+               @dragover.prevent
+               @drop.prevent="handleDrop">
+            
+            <img v-if="formData.preview" :src="formData.preview" class="absolute inset-0 w-full h-full object-cover z-10" />
+            <div v-if="formData.preview" class="absolute inset-0 bg-black/50 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <span class="material-symbols-outlined text-white">upload</span>
+            </div>
+
+            <div v-if="!formData.preview" class="w-12 h-12 rounded-full bg-surface-container-high flex items-center
                         justify-center mb-3 group-hover:bg-primary-fixed transition-colors">
               <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">cloud_upload</span>
             </div>
-            <p class="text-label-md font-label-md text-on-surface font-semibold text-center mb-1">
+            <p v-if="!formData.preview" class="text-label-md font-label-md text-on-surface font-semibold text-center mb-1">
               Klik untuk unggah atau seret file ke sini
             </p>
-            <p class="text-label-sm font-label-sm text-on-surface-variant text-center">
+            <p v-if="!formData.preview" class="text-label-sm font-label-sm text-on-surface-variant text-center">
               Format JPG, PNG · Maks 5MB · Rasio 16:9
             </p>
+
+            <input type="file" ref="fotoInput" class="hidden" @change="handleFileChange" accept="image/jpeg, image/png" />
           </div>
         </FormField>
       </form>
@@ -200,9 +219,10 @@
                  hover:bg-surface-container text-label-md font-label-md font-bold transition-colors">
           Batal
         </button>
-        <button @click="saveKendaraan"
-          class="px-5 py-2.5 rounded-lg bg-secondary text-on-secondary text-label-md
-                 font-label-md font-bold hover:bg-secondary-container transition-colors shadow-sm">
+        <button @click="saveKendaraan" :disabled="saving"
+          class="px-5 py-2.5 rounded-lg bg-secondary text-on-secondary text-label-md flex items-center
+                 font-label-md font-bold hover:bg-secondary-container transition-colors shadow-sm disabled:opacity-50">
+          <span v-if="saving" class="animate-spin inline-block mr-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
           {{ isEdit ? 'Simpan Perubahan' : 'Simpan Kendaraan' }}
         </button>
       </template>
@@ -243,11 +263,16 @@
 import { ref, onMounted, watch } from 'vue'
 import api from '@/services/api'
 import { useToastStore } from '@/stores/toast'
+import { useSearchStore } from '@/stores/search'
+import { useFormValidation } from '@/composables/useFormValidation'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import BaseModal   from '@/components/ui/BaseModal.vue'
 import FormField   from '@/components/ui/FormField.vue'
+import SkeletonLoader from '@/components/ui/SkeletonLoader.vue'
 
 const toast = useToastStore()
+const searchStore = useSearchStore()
+const { errors, validateRequired, validateMinMax, validatePattern, clearErrors, hasErrors } = useFormValidation()
 
 // ── State ──
 const search       = ref('')
@@ -265,9 +290,25 @@ const kendaraan = ref([])
 
 const emptyForm = () => ({
   nama: '', tipe: '', plat: '', kapasitas: '', harga: '', tahun: '', warna: '',
-  status: 'tersedia', deskripsi: '',
+  status: 'tersedia', deskripsi: '', foto: null, preview: null
 })
 const formData = ref(emptyForm())
+
+const handleFileChange = (e) => {
+  const file = e.target.files[0]
+  if (file) {
+    formData.value.foto = file
+    formData.value.preview = URL.createObjectURL(file)
+  }
+}
+
+const handleDrop = (e) => {
+  const file = e.dataTransfer.files[0]
+  if (file && file.type.startsWith('image/')) {
+    formData.value.foto = file
+    formData.value.preview = URL.createObjectURL(file)
+  }
+}
 
 // ── Actions ──
 async function fetchKendaraan() {
@@ -275,7 +316,7 @@ async function fetchKendaraan() {
   try {
     const { data } = await api.get('/kendaraan', { 
       params: { 
-        search: search.value, 
+        search: search.value || searchStore.query, 
         tipe: filterTipe.value, 
         status: filterStatus.value, 
         page: currentPage.value 
@@ -293,7 +334,7 @@ async function fetchKendaraan() {
 onMounted(fetchKendaraan)
 
 let searchTimeout
-watch([search, filterTipe, filterStatus], () => {
+watch([search, filterTipe, filterStatus, () => searchStore.query], () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
     currentPage.value = 1
@@ -318,19 +359,57 @@ function openHapus(k) {
   showHapus.value = true
 }
 
+const saving = ref(false)
+
+function validateForm() {
+  clearErrors()
+  validateRequired('nama', formData.value.nama)
+  validateRequired('tipe', formData.value.tipe)
+  
+  if (validateRequired('plat', formData.value.plat)) {
+    validatePattern('plat', formData.value.plat, /^[A-Z]{1,2}\s\d{1,4}\s[A-Z]{1,3}$/i, 'Format plat: B 1234 ABC')
+  }
+  
+  validateMinMax('kapasitas', formData.value.kapasitas, 1, 50)
+  validateMinMax('harga', formData.value.harga, 50000, 10000000, 'Harga minimal Rp 50.000')
+  validateMinMax('tahun', formData.value.tahun, 1990, new Date().getFullYear())
+  
+  return !hasErrors()
+}
+
 async function saveKendaraan() {
+  if (!validateForm()) {
+    toast.error('Error', 'Periksa kembali isian form')
+    return
+  }
+
+  saving.value = true
   try {
+    const data = new FormData()
+    Object.keys(formData.value).forEach(key => {
+      if (key !== 'preview' && formData.value[key] !== null) {
+        data.append(key, formData.value[key])
+      }
+    })
+
     if (isEdit.value) {
-      await api.put(`/kendaraan/${formData.value.id}`, formData.value)
+      data.append('_method', 'PUT')
+      await api.post(`/kendaraan/${formData.value.id}`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
       toast.success('Berhasil', 'Data kendaraan berhasil diperbarui.')
     } else {
-      await api.post('/kendaraan', formData.value)
+      await api.post('/kendaraan', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
       toast.success('Berhasil', 'Kendaraan berhasil ditambahkan.')
     }
     showForm.value = false
     fetchKendaraan()
   } catch (e) {
     toast.error('Error', e.response?.data?.message || 'Gagal menyimpan data.')
+  } finally {
+    saving.value = false
   }
 }
 

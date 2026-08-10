@@ -27,10 +27,11 @@
           </select>
         </div>
       </div>
-      <button class="bg-secondary text-on-secondary px-6 py-2 rounded-lg font-bold text-label-md
-                     flex items-center gap-2 h-10 shadow-sm hover:bg-secondary-container transition-colors">
-        <span class="material-symbols-outlined" style="font-size:18px">download</span>
-        Export Excel
+      <button @click="exportToExcel" class="bg-secondary text-on-secondary px-6 py-2 rounded-lg font-bold text-label-md
+                     flex items-center gap-2 h-10 shadow-sm hover:bg-secondary-container transition-colors disabled:opacity-50" :disabled="exporting">
+        <span v-if="exporting" class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+        <span v-else class="material-symbols-outlined" style="font-size:18px">download</span>
+        {{ exporting ? 'Mengekspor...' : 'Export Excel' }}
       </button>
     </div>
 
@@ -337,6 +338,54 @@ async function tolakTransaksi() {
   } catch (error) {
     console.error('Error rejecting transaksi:', error)
     toast.error('Gagal', 'Gagal menolak transaksi')
+  }
+}
+
+const exporting = ref(false)
+async function exportToExcel() {
+  exporting.value = true
+  try {
+    // Get all transactions without pagination
+    const response = await api.get('/transaksi', {
+      params: {
+        status: filterStatus.value,
+        tanggal_mulai: filterMulai.value,
+        tanggal_akhir: filterAkhir.value,
+        limit: 1000 // Get a large amount or modify backend to support ?export=true
+      }
+    })
+    
+    let dataToExport = response.data.data || response.data
+    
+    // Create CSV content
+    const headers = ['ID Transaksi', 'Tanggal Mulai', 'Tanggal Akhir', 'Pelanggan', 'Kendaraan', 'Total', 'Status']
+    const rows = dataToExport.map(t => [
+      t.id,
+      t.tanggal_mulai,
+      t.tanggal_akhir,
+      `"${t.pelanggan?.nama || '-'}"`,
+      `"${t.kendaraan?.nama || '-'}"`,
+      t.total,
+      t.status
+    ])
+    
+    const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n')
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `transaksi_export_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    toast.success('Berhasil', 'Data transaksi berhasil diekspor')
+  } catch (error) {
+    console.error('Export error:', error)
+    toast.error('Gagal', 'Gagal mengekspor data')
+  } finally {
+    exporting.value = false
   }
 }
 </script>

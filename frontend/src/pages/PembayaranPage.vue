@@ -22,7 +22,7 @@
     <!-- Stats -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <div v-for="stat in stats" :key="stat.label"
-        class="bg-white/80 backdrop-blur-md border border-white/20 rounded-xl p-6
+        class="glass-card rounded-xl p-6
                shadow-[0px_4px_20px_rgba(15,23,42,0.05)] relative overflow-hidden">
         <div class="flex justify-between items-start mb-4">
           <p class="text-label-md font-label-md text-on-surface-variant">{{ stat.label }}</p>
@@ -39,7 +39,7 @@
     </div>
 
     <!-- Table -->
-    <div class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(15,23,42,0.05)] overflow-hidden border border-outline-variant/30 relative">
+    <div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(15,23,42,0.05)] overflow-hidden border border-outline-variant/30 relative">
       <div class="p-6 border-b border-surface-container-high flex justify-between items-center bg-surface-bright">
         <h2 class="text-headline-md font-headline-md text-primary">Daftar Transaksi</h2>
         <div class="relative w-64">

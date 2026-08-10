@@ -63,4 +63,48 @@ class AuthController extends Controller
     {
         return response()->json($request->user());
     }
+
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'telepon' => 'nullable|string|max:20',
+            'foto_profil' => 'nullable|image|max:2048',
+        ]);
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->telepon = $request->telepon;
+
+        if ($request->hasFile('foto_profil')) {
+            $path = $request->file('foto_profil')->store('profiles', 'public');
+            $user->foto_profil = '/storage/' . $path;
+        }
+
+        $user->save();
+
+        return response()->json(['message' => 'Profile updated successfully', 'user' => $user]);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json(['message' => 'Password lama tidak sesuai.'], 400);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return response()->json(['message' => 'Password berhasil diubah']);
+    }
 }
