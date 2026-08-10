@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('pembayaran', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('transaksi_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('transaksi_id')->constrained('transaksi')->cascadeOnDelete();
             $table->string('metode');
             $table->bigInteger('jumlah');
             $table->enum('status', ['menunggu verifikasi', 'berhasil', 'ditolak'])->default('menunggu verifikasi');

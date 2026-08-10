@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('pengembalian', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('transaksi_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('transaksi_id')->constrained('transaksi')->cascadeOnDelete();
             $table->date('tanggal_kembali');
             $table->text('kondisi_kendaraan')->nullable();
             $table->bigInteger('denda')->default(0);
