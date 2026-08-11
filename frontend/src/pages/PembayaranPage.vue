@@ -38,17 +38,22 @@
       </div>
     </div>
 
+    <!-- Filters -->
+    <div class="bg-surface rounded-xl shadow-sm border border-outline-variant p-4 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div class="flex flex-wrap gap-4 w-full md:w-auto">
+        <div class="relative w-full md:w-64">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style="font-size:18px">search</span>
+          <input v-model="search" type="text" placeholder="Cari Pelanggan..."
+            class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg
+                   text-body-md font-body-md focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all" />
+        </div>
+      </div>
+    </div>
+
     <!-- Table -->
     <div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(15,23,42,0.05)] overflow-hidden border border-outline-variant/30 relative">
       <div class="p-6 border-b border-surface-container-high flex justify-between items-center bg-surface-bright">
         <h2 class="text-headline-md font-headline-md text-primary">Daftar Transaksi</h2>
-        <div class="relative w-64">
-          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
-            style="font-size:18px">search</span>
-          <input v-model="search" type="text" placeholder="Cari Pelanggan..."
-            class="w-full pl-10 pr-4 py-2 bg-surface rounded-lg border border-outline-variant
-                   text-body-md focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all" />
-        </div>
       </div>
       <table class="w-full text-left border-collapse">
         <thead>

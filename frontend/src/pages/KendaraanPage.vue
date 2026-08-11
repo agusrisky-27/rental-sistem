@@ -12,19 +12,17 @@
     </div>
 
     <!-- Filters -->
-    <div class="glass-card rounded-xl p-4 mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
-      <div class="flex gap-4 w-full md:w-auto">
+    <div class="bg-surface rounded-xl shadow-sm border border-outline-variant p-4 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div class="flex flex-wrap gap-4 w-full md:w-auto">
         <div class="relative w-full md:w-64">
-          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline"
-            style="font-size:18px">search</span>
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style="font-size:18px">search</span>
           <input v-model="search" type="text" placeholder="Cari kendaraan..."
-            class="w-full pl-10 pr-4 py-2 bg-surface rounded-lg border border-outline-variant
-                   focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none
-                   text-body-md font-body-md transition-all" />
+            class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg
+                   text-body-md font-body-md focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all" />
         </div>
         <select v-model="filterTipe"
-          class="bg-surface border border-outline-variant rounded-lg px-4 py-2
-                 text-body-md font-body-md focus:border-secondary outline-none">
+          class="bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2
+                 text-body-md font-body-md focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all">
           <option value="">Semua Tipe</option>
           <option value="SUV">SUV</option>
           <option value="Sedan">Sedan</option>
@@ -32,8 +30,8 @@
           <option value="Hatchback">Hatchback</option>
         </select>
         <select v-model="filterStatus"
-          class="bg-surface border border-outline-variant rounded-lg px-4 py-2
-                 text-body-md font-body-md focus:border-secondary outline-none">
+          class="bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2
+                 text-body-md font-body-md focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all">
           <option value="">Semua Status</option>
           <option value="tersedia">Tersedia</option>
           <option value="disewa">Disewa</option>
