@@ -3,7 +3,7 @@
     <div class="flex justify-between items-end mb-8">
       <div>
         <h1 class="text-headline-lg font-headline-lg text-on-surface mb-2">Manajemen Pelanggan</h1>
-        <p class="text-on-surface-variant font-body-md text-body-md">Kelola data pelanggan SiwaKen.</p>
+        <p class="text-on-surface-variant font-body-md text-body-md">Kelola data pelanggan SewaKen.</p>
       </div>
       <button @click="openTambah"
         class="bg-secondary text-on-primary px-6 py-3 rounded-lg font-bold text-label-md

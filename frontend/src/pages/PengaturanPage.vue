@@ -134,7 +134,7 @@ const profileForm = reactive({
 // Settings State
 const loadingSettings = ref(false)
 const settingsForm = reactive({
-  app_name: 'SiwaKen',
+  app_name: 'SewaKen',
   app_description: 'Sistem Sewa Kendaraan',
   app_logo: ''
 })

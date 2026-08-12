@@ -5,11 +5,9 @@
 
         <!-- Header -->
         <div class="text-center">
-          <div class="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
-            <span class="material-symbols-outlined text-white fill" style="font-size:32px">directions_car</span>
-          </div>
+          <img src="/logo.png" alt="SewaKen Logo" class="w-20 h-20 object-contain mx-auto mb-4" />
           <h1 class="text-headline-md font-headline-md font-bold text-on-surface mb-1">
-            Selamat Datang di SiwaKen
+            Selamat Datang di SewaKen
           </h1>
           <p class="text-body-md font-body-md text-on-surface-variant">
             Solusi Sewa Kendaraan Terpercaya

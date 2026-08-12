@@ -5,7 +5,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // ── SiwaKen Design Tokens (exact dari Stitch) ──
+        // ── SewaKen Design Tokens (exact dari Stitch) ──
         'primary':                  '#000000',
         'on-primary':               '#ffffff',
         'primary-container':        '#131b2e',
