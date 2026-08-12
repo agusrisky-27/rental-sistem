@@ -4,7 +4,7 @@
 
     <!-- Page title / breadcrumb -->
     <div class="flex items-center gap-2">
-      <span class="text-label-md font-label-md text-on-surface-variant">SiwaKen</span>
+      <span class="text-label-md font-label-md text-on-surface-variant">SewaKen</span>
       <span class="material-symbols-outlined text-on-surface-variant" style="font-size:16px">chevron_right</span>
       <span class="text-label-md font-label-md font-semibold text-secondary">{{ pageTitle }}</span>
     </div>

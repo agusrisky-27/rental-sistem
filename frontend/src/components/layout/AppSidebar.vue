@@ -4,10 +4,8 @@
 
     <!-- Logo -->
     <div class="flex items-center gap-3 px-4 mb-10">
-      <div class="h-10 w-10 rounded-md bg-secondary flex items-center justify-center">
-        <span class="material-symbols-outlined text-white fill">directions_car</span>
-      </div>
-      <span class="text-headline-md font-headline-md font-bold text-primary">SiwaKen</span>
+      <img src="/logo.png" alt="SewaKen Logo" class="h-10 w-10 object-contain rounded-md" />
+      <span class="text-headline-md font-headline-md font-bold text-primary">SewaKen</span>
     </div>
 
     <!-- Main Nav -->
