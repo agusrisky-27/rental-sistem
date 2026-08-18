@@ -1,10 +1,13 @@
 <template>
   <div>
     <!-- Header -->
-    <div class="flex justify-between items-center mb-8">
-      <h1 class="text-headline-lg font-headline-lg text-primary">Manajemen Kendaraan</h1>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+      <div>
+        <h1 class="text-headline-lg font-headline-lg font-bold text-slate-900 dark:text-white">Manajemen Kendaraan</h1>
+        <p class="text-body-md font-body-md text-slate-500 dark:text-slate-400 mt-1">Kelola ketersediaan, tarif, dan data armada rental.</p>
+      </div>
       <button @click="openTambah"
-        class="bg-secondary text-on-secondary font-bold text-label-md px-6 py-3
+        class="bg-secondary text-on-secondary font-bold text-label-md px-5 py-2.5
                rounded-lg flex items-center gap-2 shadow-sm hover:bg-secondary-container transition-colors">
         <span class="material-symbols-outlined" style="font-size:18px">add</span>
         Tambah Kendaraan
@@ -12,99 +15,123 @@
     </div>
 
     <!-- Filters -->
-    <div class="bg-surface rounded-xl shadow-sm border border-outline-variant p-4 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-      <div class="flex flex-wrap gap-4 w-full md:w-auto">
-        <div class="relative w-full md:w-64">
-          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style="font-size:18px">search</span>
-          <input v-model="search" type="text" placeholder="Cari kendaraan..."
-            class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg
-                   text-body-md font-body-md focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all" />
+    <div class="filter-panel mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div class="flex flex-wrap gap-3 w-full md:w-auto">
+        <!-- Search Field -->
+        <div class="relative w-full md:w-80">
+          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary dark:text-blue-400 pointer-events-none transition-colors" style="font-size:20px">search</span>
+          <input v-model="search" type="text" placeholder="Cari nama, nomor plat, tipe..."
+            class="search-input-field" />
+          <button v-if="search" @click="search = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            <span class="material-symbols-outlined" style="font-size:18px">close</span>
+          </button>
         </div>
+
+        <!-- Tipe Filter -->
         <select v-model="filterTipe"
-          class="bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2
-                 text-body-md font-body-md focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all">
+          class="form-input md:w-44 py-2.5">
           <option value="">Semua Tipe</option>
           <option value="SUV">SUV</option>
           <option value="Sedan">Sedan</option>
           <option value="MPV">MPV</option>
           <option value="Hatchback">Hatchback</option>
+          <option value="Minibus">Minibus</option>
         </select>
+
+        <!-- Status Filter -->
         <select v-model="filterStatus"
-          class="bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2
-                 text-body-md font-body-md focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all">
+          class="form-input md:w-44 py-2.5">
           <option value="">Semua Status</option>
           <option value="tersedia">Tersedia</option>
           <option value="disewa">Disewa</option>
           <option value="maintenance">Maintenance</option>
         </select>
       </div>
+
+      <div v-if="filterTipe || filterStatus || search" class="w-full md:w-auto flex justify-end">
+        <button @click="resetFilters" class="text-xs font-semibold text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center gap-1">
+          <span class="material-symbols-outlined" style="font-size:16px">restart_alt</span>
+          Reset Filter
+        </button>
+      </div>
     </div>
 
     <!-- Table -->
-    <div class="bg-surface rounded-xl shadow-[0px_4px_20px_rgba(15,23,42,0.05)] overflow-hidden">
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="border-b border-surface-variant bg-surface-container-low/50">
-            <th class="py-4 px-6 text-label-md font-label-md text-on-surface-variant font-semibold">Kendaraan</th>
-            <th class="py-4 px-6 text-label-md font-label-md text-on-surface-variant font-semibold">Tipe</th>
-            <th class="py-4 px-6 text-label-md font-label-md text-on-surface-variant font-semibold">Nomor Plat</th>
-            <th class="py-4 px-6 text-label-md font-label-md text-on-surface-variant font-semibold">Harga/Hari</th>
-            <th class="py-4 px-6 text-label-md font-label-md text-on-surface-variant font-semibold">Status</th>
-            <th class="py-4 px-6 text-label-md font-label-md text-on-surface-variant font-semibold text-right">Aksi</th>
-          </tr>
-        </thead>
-        <tbody class="text-body-md font-body-md">
-          <tr v-if="loading">
-            <td colspan="6" class="p-6">
-              <SkeletonLoader type="table" :rows="5" />
-            </td>
-          </tr>
-          <tr v-if="kendaraan.length === 0 && !loading">
-            <td colspan="6" class="text-center py-12 text-on-surface-variant">Tidak ada data kendaraan</td>
-          </tr>
-          <template v-if="!loading">
-            <tr v-for="k in kendaraan" :key="k.id"
-              class="border-b border-surface-variant hover:bg-surface-container-lowest/50 transition-colors group">
-              <td class="py-4 px-6 flex items-center gap-4">
-                <div class="w-16 h-12 rounded-lg bg-surface-container overflow-hidden flex items-center justify-center">
-                  <span class="material-symbols-outlined text-outline text-3xl">directions_car</span>
-                </div>
-                <span class="font-semibold text-primary">{{ k.nama }}</span>
-              </td>
-              <td class="py-4 px-6 text-on-surface">{{ k.tipe }}</td>
-              <td class="py-4 px-6 text-on-surface">{{ k.plat }}</td>
-              <td class="py-4 px-6 text-on-surface">{{ formatRupiah(k.harga) }}</td>
-              <td class="py-4 px-6">
-                <StatusBadge :status="k.status" />
-              </td>
-              <td class="py-4 px-6 text-right">
-                <button @click="openEdit(k)"
-                  class="text-on-surface-variant hover:text-secondary p-1
-                         opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span class="material-symbols-outlined">edit</span>
-                </button>
-                <button @click="openHapus(k)"
-                  class="text-on-surface-variant hover:text-error p-1 ml-2
-                         opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span class="material-symbols-outlined">delete</span>
-                </button>
+    <div class="table-panel">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-700/80">
+              <th class="py-4 px-6 text-label-md font-label-md text-slate-600 dark:text-slate-300 font-semibold">Kendaraan</th>
+              <th class="py-4 px-6 text-label-md font-label-md text-slate-600 dark:text-slate-300 font-semibold">Tipe</th>
+              <th class="py-4 px-6 text-label-md font-label-md text-slate-600 dark:text-slate-300 font-semibold">Nomor Plat</th>
+              <th class="py-4 px-6 text-label-md font-label-md text-slate-600 dark:text-slate-300 font-semibold">Harga / Hari</th>
+              <th class="py-4 px-6 text-label-md font-label-md text-slate-600 dark:text-slate-300 font-semibold">Status</th>
+              <th class="py-4 px-6 text-label-md font-label-md text-slate-600 dark:text-slate-300 font-semibold text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="text-body-md font-body-md divide-y divide-slate-100 dark:divide-slate-700/50">
+            <tr v-if="loading">
+              <td colspan="6" class="p-6">
+                <SkeletonLoader type="table" :rows="5" />
               </td>
             </tr>
-          </template>
-        </tbody>
-      </table>
+            <tr v-if="kendaraan.length === 0 && !loading">
+              <td colspan="6" class="text-center py-12 text-slate-500 dark:text-slate-400">
+                <span class="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">search_off</span>
+                Tidak ada data kendaraan ditemukan
+              </td>
+            </tr>
+            <template v-if="!loading">
+              <tr v-for="k in kendaraan" :key="k.id"
+                class="hover:bg-slate-50/80 dark:hover:bg-slate-750/50 transition-colors group">
+                <td class="py-4 px-6 flex items-center gap-4">
+                  <div class="w-14 h-11 rounded-lg bg-slate-100 dark:bg-slate-700/60 overflow-hidden flex items-center justify-center shrink-0 border border-slate-200/50 dark:border-slate-700">
+                    <img v-if="k.foto" :src="k.foto" :alt="k.nama" class="w-full h-full object-cover" />
+                    <span v-else class="material-symbols-outlined text-slate-400 dark:text-slate-500 text-2xl">directions_car</span>
+                  </div>
+                  <div>
+                    <span class="font-semibold text-slate-900 dark:text-white block">{{ k.nama }}</span>
+                    <span class="text-xs text-slate-400 dark:text-slate-500">{{ k.tahun }} · {{ k.warna || '-' }}</span>
+                  </div>
+                </td>
+                <td class="py-4 px-6 text-slate-700 dark:text-slate-300">{{ k.tipe }}</td>
+                <td class="py-4 px-6 font-mono text-sm text-slate-800 dark:text-slate-200">{{ k.plat }}</td>
+                <td class="py-4 px-6 font-semibold text-slate-900 dark:text-slate-100">{{ formatRupiah(k.harga) }}</td>
+                <td class="py-4 px-6">
+                  <StatusBadge :status="k.status" />
+                </td>
+                <td class="py-4 px-6 text-right">
+                  <div class="flex items-center justify-end gap-1">
+                    <button @click="openEdit(k)" title="Edit"
+                      class="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-secondary dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                      <span class="material-symbols-outlined" style="font-size:20px">edit</span>
+                    </button>
+                    <button @click="openHapus(k)" title="Hapus"
+                      class="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors">
+                      <span class="material-symbols-outlined" style="font-size:20px">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
 
       <!-- Pagination -->
-      <div class="py-4 px-6 border-t border-surface-variant flex justify-between items-center bg-surface-container-lowest/30">
-        <span class="text-label-sm font-label-sm text-on-surface-variant">
+      <div class="py-4 px-6 border-t border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row justify-between items-center gap-3 bg-slate-50 dark:bg-slate-900/60">
+        <span class="text-label-sm font-label-sm text-slate-500 dark:text-slate-400">
           Menampilkan {{ kendaraan.length }} dari {{ pagination?.total || 0 }} kendaraan
         </span>
         <div class="flex gap-2 items-center">
-          <button @click="currentPage > 1 && (currentPage--, fetchKendaraan())" :disabled="currentPage <= 1" class="p-2 border border-outline-variant rounded-md text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed">
+          <button @click="currentPage > 1 && (currentPage--, fetchKendaraan())" :disabled="currentPage <= 1" 
+            class="p-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
             <span class="material-symbols-outlined" style="font-size:18px">chevron_left</span>
           </button>
-          <span class="px-3 py-2 text-label-md">{{ currentPage }} / {{ pagination?.last_page || 1 }}</span>
-          <button @click="currentPage < pagination?.last_page && (currentPage++, fetchKendaraan())" :disabled="currentPage >= (pagination?.last_page || 1)" class="p-2 border border-outline-variant rounded-md text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed">
+          <span class="px-3 py-1.5 text-label-md font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">{{ currentPage }} / {{ pagination?.last_page || 1 }}</span>
+          <button @click="currentPage < pagination?.last_page && (currentPage++, fetchKendaraan())" :disabled="currentPage >= (pagination?.last_page || 1)" 
+            class="p-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
             <span class="material-symbols-outlined" style="font-size:18px">chevron_right</span>
           </button>
         </div>
@@ -114,19 +141,19 @@
     <!-- ── MODAL TAMBAH/EDIT KENDARAAN ── -->
     <BaseModal v-model="showForm" max-width="640px">
       <template #header>
-        <h2 class="text-headline-md font-headline-md font-bold text-on-surface">
+        <h2 class="text-headline-md font-headline-md font-bold text-slate-900 dark:text-white">
           {{ isEdit ? 'Edit Kendaraan' : 'Tambah Kendaraan Baru' }}
         </h2>
       </template>
 
-      <form class="space-y-6">
+      <form class="space-y-6" @submit.prevent="saveKendaraan">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
           <!-- Left col -->
           <div class="space-y-4">
             <FormField label="Nama Kendaraan">
               <input v-model="formData.nama" type="text" placeholder="Contoh: Toyota Avanza G"
                 class="form-input" />
-              <span v-if="errors.nama" class="text-label-sm text-error mt-1">{{ errors.nama }}</span>
+              <span v-if="errors.nama" class="text-label-sm text-rose-500 mt-1">{{ errors.nama }}</span>
             </FormField>
             <FormField label="Tipe Kendaraan">
               <select v-model="formData.tipe" class="form-input">
@@ -134,19 +161,19 @@
                 <option>MPV</option><option>SUV</option><option>Sedan</option>
                 <option>Hatchback</option><option>Minibus</option>
               </select>
-              <span v-if="errors.tipe" class="text-label-sm text-error mt-1">{{ errors.tipe }}</span>
+              <span v-if="errors.tipe" class="text-label-sm text-rose-500 mt-1">{{ errors.tipe }}</span>
             </FormField>
             <FormField label="Nomor Plat">
               <input v-model="formData.plat" type="text" placeholder="B 1234 ABC" class="form-input uppercase" />
-              <span v-if="errors.plat" class="text-label-sm text-error mt-1">{{ errors.plat }}</span>
+              <span v-if="errors.plat" class="text-label-sm text-rose-500 mt-1">{{ errors.plat }}</span>
             </FormField>
             <FormField label="Kapasitas">
               <div class="relative">
                 <input v-model="formData.kapasitas" type="number" placeholder="0"
                   class="form-input pr-16" />
-                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-label-md">orang</span>
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-label-md">orang</span>
               </div>
-              <span v-if="errors.kapasitas" class="text-label-sm text-error mt-1">{{ errors.kapasitas }}</span>
+              <span v-if="errors.kapasitas" class="text-label-sm text-rose-500 mt-1">{{ errors.kapasitas }}</span>
             </FormField>
           </div>
 
@@ -154,14 +181,14 @@
           <div class="space-y-4">
             <FormField label="Harga per Hari">
               <div class="relative">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-label-md">Rp</span>
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-label-md">Rp</span>
                 <input v-model="formData.harga" type="number" placeholder="0" class="form-input pl-10" />
               </div>
-              <span v-if="errors.harga" class="text-label-sm text-error mt-1">{{ errors.harga }}</span>
+              <span v-if="errors.harga" class="text-label-sm text-rose-500 mt-1">{{ errors.harga }}</span>
             </FormField>
             <FormField label="Tahun">
               <input v-model="formData.tahun" type="number" placeholder="2024" class="form-input" />
-              <span v-if="errors.tahun" class="text-label-sm text-error mt-1">{{ errors.tahun }}</span>
+              <span v-if="errors.tahun" class="text-label-sm text-rose-500 mt-1">{{ errors.tahun }}</span>
             </FormField>
             <FormField label="Warna">
               <input v-model="formData.warna" type="text" placeholder="Hitam Metalik" class="form-input" />
@@ -169,6 +196,7 @@
             <FormField label="Status Awal">
               <select v-model="formData.status" class="form-input">
                 <option value="tersedia">Tersedia</option>
+                <option value="disewa">Disewa</option>
                 <option value="maintenance">Maintenance</option>
               </select>
             </FormField>
@@ -183,8 +211,8 @@
 
         <!-- Upload foto -->
         <FormField label="Foto Kendaraan">
-          <div class="border-2 border-dashed border-outline/40 rounded-xl bg-surface-container-lowest
-                      hover:bg-surface-container-low transition-colors flex flex-col items-center
+          <div class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-900/60
+                      hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors flex flex-col items-center
                       justify-center py-8 px-4 cursor-pointer group relative overflow-hidden"
                @click="$refs.fotoInput.click()"
                @dragover.prevent
@@ -195,14 +223,14 @@
               <span class="material-symbols-outlined text-white">upload</span>
             </div>
 
-            <div v-if="!formData.preview" class="w-12 h-12 rounded-full bg-surface-container-high flex items-center
-                        justify-center mb-3 group-hover:bg-primary-fixed transition-colors">
-              <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">cloud_upload</span>
+            <div v-if="!formData.preview" class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center
+                        justify-center mb-3 group-hover:bg-blue-200 dark:group-hover:bg-blue-800 transition-colors">
+              <span class="material-symbols-outlined text-secondary dark:text-blue-400">cloud_upload</span>
             </div>
-            <p v-if="!formData.preview" class="text-label-md font-label-md text-on-surface font-semibold text-center mb-1">
+            <p v-if="!formData.preview" class="text-label-md font-label-md text-slate-800 dark:text-slate-200 font-semibold text-center mb-1">
               Klik untuk unggah atau seret file ke sini
             </p>
-            <p v-if="!formData.preview" class="text-label-sm font-label-sm text-on-surface-variant text-center">
+            <p v-if="!formData.preview" class="text-label-sm font-label-sm text-slate-500 dark:text-slate-400 text-center">
               Format JPG, PNG · Maks 5MB · Rasio 16:9
             </p>
 
@@ -213,13 +241,13 @@
 
       <template #footer>
         <button @click="showForm = false"
-          class="px-5 py-2.5 rounded-lg border border-primary text-primary bg-white
-                 hover:bg-surface-container text-label-md font-label-md font-bold transition-colors">
+          class="px-5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700
+                 hover:bg-slate-100 dark:hover:bg-slate-600 text-label-md font-semibold transition-colors">
           Batal
         </button>
         <button @click="saveKendaraan" :disabled="saving"
           class="px-5 py-2.5 rounded-lg bg-secondary text-on-secondary text-label-md flex items-center
-                 font-label-md font-bold hover:bg-secondary-container transition-colors shadow-sm disabled:opacity-50">
+                 font-bold hover:bg-secondary-container transition-colors shadow-sm disabled:opacity-50">
           <span v-if="saving" class="animate-spin inline-block mr-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
           {{ isEdit ? 'Simpan Perubahan' : 'Simpan Kendaraan' }}
         </button>
@@ -232,23 +260,22 @@
         <div></div>
       </template>
       <div class="flex flex-col items-center text-center py-4">
-        <div class="w-16 h-16 rounded-full bg-error-container/30 flex items-center justify-center mb-4">
-          <span class="material-symbols-outlined text-error fill" style="font-size:32px">delete</span>
+        <div class="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-950/60 flex items-center justify-center mb-4">
+          <span class="material-symbols-outlined text-rose-600 dark:text-rose-400 fill" style="font-size:32px">delete</span>
         </div>
-        <h2 class="text-xl font-bold text-on-surface mb-3">Hapus Kendaraan?</h2>
-        <p class="text-body-md font-body-md text-on-surface-variant mb-6">
-          Kendaraan <strong>{{ selectedKendaraan?.nama }}</strong> akan dihapus secara permanen.
-          Tindakan ini tidak dapat dibatalkan.
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Hapus Kendaraan?</h2>
+        <p class="text-body-md font-body-md text-slate-500 dark:text-slate-400 mb-6">
+          Kendaraan <strong class="text-slate-800 dark:text-slate-200">{{ selectedKendaraan?.nama }}</strong> akan dihapus secara permanen.
         </p>
-        <div class="flex w-full gap-4">
+        <div class="flex w-full gap-3">
           <button @click="showHapus = false"
-            class="flex-1 py-3 border border-primary text-primary rounded-lg
-                   text-label-md font-label-md font-semibold hover:bg-surface-container transition-colors">
+            class="flex-1 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 rounded-lg
+                   text-label-md font-semibold hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
             Batal
           </button>
           <button @click="deleteKendaraan"
-            class="flex-1 py-3 bg-error text-on-error rounded-lg
-                   text-label-md font-label-md font-semibold hover:bg-error/90 transition-colors">
+            class="flex-1 py-2.5 bg-rose-600 text-white rounded-lg
+                   text-label-md font-semibold hover:bg-rose-700 transition-colors shadow-sm">
             Hapus
           </button>
         </div>
@@ -306,6 +333,13 @@ const handleDrop = (e) => {
     formData.value.foto = file
     formData.value.preview = URL.createObjectURL(file)
   }
+}
+
+function resetFilters() {
+  search.value = ''
+  filterTipe.value = ''
+  filterStatus.value = ''
+  searchStore.setQuery('')
 }
 
 // ── Actions ──
@@ -426,11 +460,3 @@ function formatRupiah(n) {
   return 'Rp ' + Number(n).toLocaleString('id-ID')
 }
 </script>
-
-<style>
-.form-input {
-  @apply w-full bg-surface-container-lowest border border-outline/40 rounded-lg px-4 py-2.5
-         text-body-md font-body-md text-on-surface placeholder:text-on-surface-variant/50
-         focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all;
-}
-</style>

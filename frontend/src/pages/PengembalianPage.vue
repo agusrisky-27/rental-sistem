@@ -1,119 +1,140 @@
 <template>
   <div>
-    <div class="flex justify-between items-end mb-8">
+    <!-- Header -->
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
       <div>
-        <h1 class="text-headline-lg font-headline-lg text-on-surface mb-2">Manajemen Pengembalian</h1>
-        <p class="text-body-md font-body-md text-on-surface-variant">Kelola kendaraan yang harus dikembalikan.</p>
+        <h1 class="text-headline-lg font-headline-lg font-bold text-slate-900 dark:text-white">Manajemen Pengembalian</h1>
+        <p class="text-body-md font-body-md text-slate-500 dark:text-slate-400 mt-1">Kelola dan periksa kondisi kendaraan yang dikembalikan pelanggan.</p>
       </div>
       <!-- Quick stats -->
       <div class="flex gap-4">
-        <div class="glass-card p-4 rounded-xl flex items-center gap-4">
-          <div class="w-12 h-12 rounded-full bg-error/10 flex items-center justify-center text-error">
+        <div class="glass-card p-4 rounded-xl flex items-center gap-4 shadow-sm">
+          <div class="w-11 h-11 rounded-full bg-rose-100 dark:bg-rose-950/60 flex items-center justify-center text-rose-600 dark:text-rose-400">
             <span class="material-symbols-outlined">warning</span>
           </div>
           <div>
-            <p class="text-label-sm font-label-sm text-on-surface-variant">Terlambat</p>
-            <p class="text-headline-md font-headline-md text-on-surface">{{ terlambatCount }}</p>
+            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Terlambat</p>
+            <p class="text-headline-md font-headline-md font-bold text-rose-600 dark:text-rose-400">{{ terlambatCount }}</p>
           </div>
         </div>
-        <div class="glass-card p-4 rounded-xl flex items-center gap-4">
-          <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+        <div class="glass-card p-4 rounded-xl flex items-center gap-4 shadow-sm">
+          <div class="w-11 h-11 rounded-full bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-secondary dark:text-blue-400">
             <span class="material-symbols-outlined">today</span>
           </div>
           <div>
-            <p class="text-label-sm font-label-sm text-on-surface-variant">Hari Ini</p>
-            <p class="text-headline-md font-headline-md text-on-surface">{{ hariIniCount }}</p>
+            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Hari Ini</p>
+            <p class="text-headline-md font-headline-md font-bold text-slate-900 dark:text-white">{{ hariIniCount }}</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Filters -->
-    <div class="bg-surface rounded-xl shadow-sm border border-outline-variant p-4 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-      <div class="flex flex-wrap gap-4 w-full md:w-auto">
-        <div class="relative w-full md:w-64">
-          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style="font-size:18px">search</span>
-          <input v-model="search" type="text" placeholder="Cari Nopol atau Pelanggan..."
-            class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg
-                   text-body-md font-body-md focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all" />
+    <div class="filter-panel mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div class="flex flex-wrap gap-3 w-full md:w-auto">
+        <!-- Search -->
+        <div class="relative w-full md:w-80">
+          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary dark:text-blue-400 pointer-events-none transition-colors" style="font-size:20px">search</span>
+          <input v-model="search" type="text" placeholder="Cari Nopol, kendaraan, atau pelanggan..."
+            class="search-input-field" />
+          <button v-if="search" @click="search = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            <span class="material-symbols-outlined" style="font-size:18px">close</span>
+          </button>
         </div>
+      </div>
+
+      <div v-if="search" class="flex justify-end w-full md:w-auto">
+        <button @click="search = ''" class="text-xs font-semibold text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center gap-1">
+          <span class="material-symbols-outlined" style="font-size:16px">restart_alt</span>
+          Reset
+        </button>
       </div>
     </div>
 
     <!-- Table -->
-    <div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(15,23,42,0.05)] border border-surface-variant overflow-hidden relative">
-      <div class="p-6 border-b border-surface-variant flex justify-between items-center bg-surface-bright">
-        <h3 class="text-headline-md font-headline-md text-on-surface">Daftar Kendaraan</h3>
+    <div class="table-panel">
+      <div class="p-5 border-b border-slate-200 dark:border-slate-700/80 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/60">
+        <h3 class="text-headline-md font-headline-md font-bold text-slate-900 dark:text-white">Daftar Pengembalian</h3>
       </div>
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="bg-surface-container-low border-b border-surface-variant text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">
-            <th class="p-4 font-semibold">Kendaraan & Nopol</th>
-            <th class="p-4 font-semibold">Pelanggan</th>
-            <th class="p-4 font-semibold">Jadwal Kembali</th>
-            <th class="p-4 font-semibold">Status</th>
-            <th class="p-4 font-semibold">Denda (Est)</th>
-            <th class="p-4 font-semibold text-right">Aksi</th>
-          </tr>
-        </thead>
-        <tbody class="text-body-md divide-y divide-surface-variant">
-          <tr v-if="loading">
-            <td colspan="6" class="text-center py-8 text-on-surface-variant">Memuat data...</td>
-          </tr>
-          <tr v-else-if="filteredData.length === 0">
-            <td colspan="6" class="text-center py-8 text-on-surface-variant">Tidak ada data pengembalian.</td>
-          </tr>
-          <tr v-for="item in filteredData" :key="item.id"
-            class="hover:bg-surface-container-low/50 transition-colors"
-            :class="item.status === 'terlambat' ? 'bg-error/5' : ''">
-            <td class="p-4">
-              <div class="font-semibold text-on-surface">{{ item.transaksi?.kendaraan?.nama || '-' }}</div>
-              <div class="text-label-sm font-label-sm text-on-surface-variant mt-1">{{ item.transaksi?.kendaraan?.plat || '-' }}</div>
-            </td>
-            <td class="p-4">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-primary-fixed-dim text-on-primary-fixed
-                            flex items-center justify-center font-bold text-label-sm">
-                  {{ initials(item.transaksi?.pelanggan?.nama || '') }}
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-700/80 text-label-md font-label-md text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+              <th class="p-4 font-semibold">Kendaraan & Nopol</th>
+              <th class="p-4 font-semibold">Pelanggan</th>
+              <th class="p-4 font-semibold">Jadwal Kembali</th>
+              <th class="p-4 font-semibold">Status</th>
+              <th class="p-4 font-semibold">Denda (Est)</th>
+              <th class="p-4 font-semibold text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="text-body-md divide-y divide-slate-100 dark:divide-slate-700/50">
+            <tr v-if="loading">
+              <td colspan="6" class="text-center py-10 text-slate-500 dark:text-slate-400">
+                <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-secondary border-t-transparent mb-2"></div>
+                <p>Memuat data pengembalian...</p>
+              </td>
+            </tr>
+            <tr v-else-if="filteredData.length === 0">
+              <td colspan="6" class="text-center py-10 text-slate-500 dark:text-slate-400">
+                <span class="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">assignment_return</span>
+                Tidak ada data pengembalian ditemukan.
+              </td>
+            </tr>
+            <tr v-for="item in filteredData" :key="item.id"
+              class="hover:bg-slate-50/80 dark:hover:bg-slate-750/50 transition-colors"
+              :class="item.status === 'terlambat' ? 'bg-rose-50/40 dark:bg-rose-950/20' : ''">
+              <td class="p-4">
+                <div class="font-semibold text-slate-900 dark:text-white">{{ item.transaksi?.kendaraan?.nama || '-' }}</div>
+                <div class="text-xs font-mono text-slate-500 dark:text-slate-400 mt-0.5">{{ item.transaksi?.kendaraan?.plat || '-' }}</div>
+              </td>
+              <td class="p-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/60 text-secondary dark:text-blue-300
+                              flex items-center justify-center font-bold text-label-sm shrink-0">
+                    {{ initials(item.transaksi?.pelanggan?.nama || '') }}
+                  </div>
+                  <div>
+                    <div class="text-slate-900 dark:text-slate-100 font-medium">{{ item.transaksi?.pelanggan?.nama || '-' }}</div>
+                    <div class="text-xs text-slate-400 dark:text-slate-500">{{ item.transaksi?.pelanggan?.telepon || '-' }}</div>
+                  </div>
                 </div>
-                <div>
-                  <div class="text-on-surface font-medium">{{ item.transaksi?.pelanggan?.nama || '-' }}</div>
-                  <div class="text-label-sm font-label-sm text-on-surface-variant">{{ item.transaksi?.pelanggan?.telepon || '-' }}</div>
-                </div>
-              </div>
-            </td>
-            <td class="p-4">
-              <span :class="item.status === 'terlambat' ? 'text-error font-medium' : 'text-on-surface'">
-                {{ item.tanggal_kembali }}
-              </span>
-            </td>
-            <td class="p-4">
-              <StatusBadge :status="item.status" />
-            </td>
-            <td class="p-4 font-semibold" :class="item.denda ? 'text-error' : 'text-on-surface-variant'">
-              {{ item.denda ? formatRupiah(item.denda) : '-' }}
-            </td>
-            <td class="p-4 text-right">
-              <button v-if="item.status !== 'selesai'" @click="openTerima(item)"
-                class="bg-secondary text-on-secondary px-4 py-2 rounded-lg text-label-md font-label-md
-                       font-bold hover:bg-secondary/90 transition-colors">
-                Terima
-              </button>
-              <span v-else class="text-label-md text-on-surface-variant font-medium">Selesai</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="p-4 border-t border-surface-variant bg-surface-bright flex justify-between items-center" v-if="pagination">
-        <p class="text-label-sm font-label-sm text-on-surface-variant">
+              </td>
+              <td class="p-4">
+                <span :class="item.status === 'terlambat' ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-700 dark:text-slate-300'">
+                  {{ item.tanggal_kembali }}
+                </span>
+              </td>
+              <td class="p-4">
+                <StatusBadge :status="item.status" />
+              </td>
+              <td class="p-4 font-semibold" :class="item.denda ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400 dark:text-slate-500'">
+                {{ item.denda ? formatRupiah(item.denda) : '-' }}
+              </td>
+              <td class="p-4 text-right">
+                <button v-if="item.status !== 'selesai'" @click="openTerima(item)"
+                  class="bg-secondary text-on-secondary px-4 py-2 rounded-lg text-label-md font-bold hover:bg-secondary-container transition-colors shadow-sm">
+                  Terima
+                </button>
+                <span v-else class="text-label-md text-emerald-600 dark:text-emerald-400 font-semibold flex items-center justify-end gap-1">
+                  <span class="material-symbols-outlined" style="font-size:18px">check_circle</span>
+                  Selesai
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="p-4 border-t border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-900/60 flex flex-col sm:flex-row justify-between items-center gap-3" v-if="pagination">
+        <p class="text-label-sm font-label-sm text-slate-500 dark:text-slate-400">
           Menampilkan {{ (currentPage - 1) * pagination.per_page + 1 }}-{{ Math.min(currentPage * pagination.per_page, pagination.total) || 0 }} dari {{ pagination.total }} data
         </p>
         <div class="flex gap-1">
           <button v-for="page in pagination.last_page" :key="page"
             @click="changePage(page)"
             :class="[
-              'px-3 py-1 rounded-md font-medium transition-colors text-label-sm',
-              page === currentPage ? 'bg-secondary text-on-secondary' : 'bg-surface text-on-surface hover:bg-surface-container-low border border-outline-variant'
+              'px-3 py-1 rounded-md font-semibold text-sm transition-colors',
+              page === currentPage ? 'bg-secondary text-on-secondary' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
             ]">
             {{ page }}
           </button>
@@ -124,18 +145,18 @@
     <!-- Modal Detail Pengembalian -->
     <BaseModal v-model="showModal" max-width="600px">
       <template #header>
-        <h2 class="text-headline-md font-headline-md text-primary">Detail Pengembalian</h2>
+        <h2 class="text-headline-md font-headline-md font-bold text-slate-900 dark:text-white">Detail Pengembalian</h2>
       </template>
 
-      <div v-if="selected" class="flex flex-col gap-6">
+      <div v-if="selected" class="flex flex-col gap-5">
         <!-- Info grid -->
-        <div class="grid grid-cols-2 gap-y-4 gap-x-6">
+        <div class="grid grid-cols-2 gap-y-3 gap-x-4 bg-slate-50 dark:bg-slate-900/70 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
           <div v-for="row in infoRows" :key="row.label" class="flex flex-col"
             :class="row.full ? 'col-span-2' : ''">
-            <span class="text-label-sm font-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">
+            <span class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">
               {{ row.label }}
             </span>
-            <span class="text-body-md font-body-md text-on-surface" :class="row.bold ? 'font-semibold' : ''">
+            <span class="text-body-md font-body-md text-slate-800 dark:text-slate-200" :class="row.bold ? 'font-bold text-rose-600 dark:text-rose-400' : ''">
               {{ row.value }}
             </span>
           </div>
@@ -143,34 +164,31 @@
 
         <!-- Denda warning -->
         <div v-if="selected.denda"
-          class="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+          class="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl p-4 flex items-start gap-3">
           <span class="material-symbols-outlined text-amber-500 fill mt-0.5">warning</span>
           <div>
-            <h3 class="text-label-md font-label-md text-amber-900 font-bold mb-1">
+            <h3 class="text-label-md font-bold text-amber-900 dark:text-amber-300 mb-0.5">
               Keterlambatan · Denda: {{ formatRupiah(selected.denda) }}
             </h3>
-            <p class="text-sm text-amber-800">Denda dihitung berdasarkan tarif harian.</p>
+            <p class="text-xs text-amber-800 dark:text-amber-400">Denda dihitung otomatis berdasarkan tarif harian keterlambatan.</p>
           </div>
         </div>
 
         <!-- Catatan kondisi -->
-        <div class="flex flex-col gap-2">
-          <label class="text-label-md font-label-md text-primary">Catatan Kondisi Kendaraan</label>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-label-md font-medium text-slate-700 dark:text-slate-300">Catatan Kondisi Kendaraan</label>
           <textarea v-model="catatan" rows="3" placeholder="Misal: Baret halus di bumper depan, bensin full."
-            class="w-full rounded-lg border border-outline-variant bg-surface px-3 py-2
-                   text-body-md focus:border-secondary focus:outline-none focus:ring-1
-                   focus:ring-secondary transition-all resize-none"></textarea>
+            class="form-input resize-none"></textarea>
         </div>
       </div>
 
       <template #footer>
         <button @click="showModal = false"
-          class="px-6 py-2 rounded-lg border border-primary text-primary bg-white
-                 hover:bg-surface-variant text-label-md font-label-md transition-colors">
+          class="px-5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 text-label-md font-semibold hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
           Batal
         </button>
         <button @click="selesaikan"
-          class="px-6 py-2 rounded-lg bg-secondary text-on-secondary font-bold
+          class="px-5 py-2.5 rounded-lg bg-secondary text-on-secondary font-bold
                  hover:bg-secondary-container text-label-md shadow-sm transition-colors">
           Simpan & Selesaikan
         </button>
@@ -180,7 +198,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useToastStore } from '@/stores/toast'
 import api from '@/services/api'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
@@ -238,7 +256,7 @@ const filteredData   = computed(() => {
 
 const infoRows = computed(() => selected.value ? [
   { label:'Pelanggan',               value: selected.value.transaksi?.pelanggan?.nama || '-' },
-  { label:'Kendaraan',               value: `${selected.value.transaksi?.kendaraan?.nama || ''} - ${selected.value.transaksi?.kendaraan?.plat || ''}` },
+  { label:'Kendaraan',               value: `${selected.value.transaksi?.kendaraan?.nama || ''} (${selected.value.transaksi?.kendaraan?.plat || ''})` },
   { label:'Jadwal Kembali',          value: selected.value.tanggal_kembali },
   { label:'Status',                  value: selected.value.status },
   { label:'Denda Estimasi', full:true, bold:true, value: selected.value.denda ? formatRupiah(selected.value.denda) : 'Tidak ada denda' },

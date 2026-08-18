@@ -1,114 +1,138 @@
 <template>
   <div>
-    <div class="flex justify-between items-end mb-8">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
       <div>
-        <h1 class="text-headline-lg font-headline-lg text-on-surface mb-2">Manajemen Pelanggan</h1>
-        <p class="text-on-surface-variant font-body-md text-body-md">Kelola data pelanggan SewaKen.</p>
+        <h1 class="text-headline-lg font-headline-lg font-bold text-slate-900 dark:text-white">Manajemen Pelanggan</h1>
+        <p class="text-body-md font-body-md text-slate-500 dark:text-slate-400 mt-1">Kelola direktori pelanggan dan tingkat keanggotaan SewaKen.</p>
       </div>
       <button @click="openTambah"
-        class="bg-secondary text-on-primary px-6 py-3 rounded-lg font-bold text-label-md
+        class="bg-secondary text-on-secondary px-5 py-2.5 rounded-lg font-bold text-label-md
                flex items-center gap-2 hover:bg-secondary-container transition-colors shadow-sm">
-        <span class="material-symbols-outlined">add</span>
+        <span class="material-symbols-outlined" style="font-size:18px">add</span>
         Tambah Pelanggan
       </button>
     </div>
 
     <!-- Filters -->
-    <div class="bg-surface rounded-xl shadow-sm border border-outline-variant p-4 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-      <div class="flex flex-wrap gap-4 w-full md:w-auto">
-        <div class="relative w-full md:w-64">
-          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style="font-size:18px">search</span>
-          <input v-model="search" type="text" placeholder="Cari pelanggan..."
-            class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg
-                   text-body-md font-body-md focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all" />
+    <div class="filter-panel mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div class="flex flex-wrap gap-3 w-full md:w-auto">
+        <!-- Search -->
+        <div class="relative w-full md:w-80">
+          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary dark:text-blue-400 pointer-events-none transition-colors" style="font-size:20px">search</span>
+          <input v-model="search" type="text" placeholder="Cari nama, email, no hp..."
+            class="search-input-field" />
+          <button v-if="search" @click="search = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            <span class="material-symbols-outlined" style="font-size:18px">close</span>
+          </button>
         </div>
+
+        <!-- Level Filter -->
         <select v-model="filterLevel"
-          class="bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2
-                 text-body-md font-body-md focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all">
+          class="form-input md:w-44 py-2.5">
           <option value="">Semua Level</option>
           <option value="Gold">Gold</option>
           <option value="Silver">Silver</option>
           <option value="Basic">Basic</option>
         </select>
       </div>
-      <button class="text-secondary font-label-md text-label-md flex items-center gap-2
-                     border border-secondary px-4 py-2 rounded-lg hover:bg-secondary-container/10 transition-all">
-        <span class="material-symbols-outlined" style="font-size:18px">download</span>
-        Export Data
-      </button>
+
+      <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+        <button v-if="filterLevel || search" @click="resetFilters" class="text-xs font-semibold text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center gap-1">
+          <span class="material-symbols-outlined" style="font-size:16px">restart_alt</span>
+          Reset
+        </button>
+        <button class="text-secondary dark:text-blue-400 font-label-md text-label-md flex items-center gap-2
+                       border border-secondary/40 dark:border-blue-500/40 px-4 py-2.5 rounded-lg hover:bg-secondary/10 dark:hover:bg-blue-500/10 transition-colors">
+          <span class="material-symbols-outlined" style="font-size:18px">download</span>
+          Export Data
+        </button>
+      </div>
     </div>
 
     <!-- Table -->
-    <div class="bg-surface rounded-xl shadow-sm border border-outline-variant overflow-hidden">
-      <table class="w-full text-left">
-        <thead>
-          <tr class="bg-surface-container-low border-b border-outline-variant text-on-surface-variant text-label-sm font-label-sm uppercase tracking-wider">
-            <th class="px-6 py-4 font-semibold">Nama Pelanggan</th>
-            <th class="px-6 py-4 font-semibold">Email & Telepon</th>
-            <th class="px-6 py-4 font-semibold">Level</th>
-            <th class="px-6 py-4 font-semibold text-center">Total Booking</th>
-            <th class="px-6 py-4 font-semibold text-right">Aksi</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-surface-variant">
-          <tr v-if="loading">
-             <td colspan="5" class="px-6 py-8 text-center text-on-surface-variant">Memuat data...</td>
-          </tr>
-          <tr v-else-if="pelanggan.length === 0">
-             <td colspan="5" class="px-6 py-8 text-center text-on-surface-variant">Belum ada data pelanggan.</td>
-          </tr>
-          <tr v-else v-for="p in pelanggan" :key="p.id" class="hover:bg-surface-container-lowest transition-colors">
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-secondary-fixed-dim text-secondary
-                            flex items-center justify-center font-bold text-label-md">
-                  {{ initials(p.nama) }}
+    <div class="table-panel">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-700/80 text-slate-600 dark:text-slate-300 text-label-sm font-label-sm uppercase tracking-wider">
+              <th class="px-6 py-4 font-semibold">Nama Pelanggan</th>
+              <th class="px-6 py-4 font-semibold">Email & Telepon</th>
+              <th class="px-6 py-4 font-semibold">Level</th>
+              <th class="px-6 py-4 font-semibold text-center">Total Booking</th>
+              <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-700/50 text-body-md font-body-md">
+            <tr v-if="loading">
+               <td colspan="5" class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
+                 <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-secondary border-t-transparent mb-2"></div>
+                 <p>Memuat data pelanggan...</p>
+               </td>
+            </tr>
+            <tr v-else-if="pelanggan.length === 0">
+               <td colspan="5" class="px-6 py-10 text-center text-slate-500 dark:text-slate-400">
+                 <span class="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">person_off</span>
+                 Belum ada data pelanggan ditemukan.
+               </td>
+            </tr>
+            <tr v-else v-for="p in pelanggan" :key="p.id" class="hover:bg-slate-50/80 dark:hover:bg-slate-750/50 transition-colors group">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/60 text-secondary dark:text-blue-300
+                              flex items-center justify-center font-bold text-label-md shrink-0">
+                    {{ initials(p.nama) }}
+                  </div>
+                  <div>
+                    <span class="font-semibold text-slate-900 dark:text-white block">{{ p.nama }}</span>
+                    <span class="text-xs text-slate-400 dark:text-slate-500">{{ p.alamat ? p.alamat.substring(0, 30) + '...' : '-' }}</span>
+                  </div>
                 </div>
-                <span class="font-semibold text-on-surface">{{ p.nama }}</span>
-              </div>
-            </td>
-            <td class="px-6 py-4">
-              <div class="text-on-surface">{{ p.email }}</div>
-              <div class="text-on-surface-variant text-label-sm font-label-sm">{{ p.telepon }}</div>
-            </td>
-            <td class="px-6 py-4">
-              <StatusBadge :status="p.level?.toLowerCase() || 'basic'" />
-            </td>
-            <td class="px-6 py-4 text-center font-semibold text-on-surface">{{ p.transaksi?.length || '-' }}</td>
-            <td class="px-6 py-4 text-right">
-              <button class="text-secondary hover:text-secondary-container p-2 transition-colors">
-                <span class="material-symbols-outlined">visibility</span>
-              </button>
-              <button @click="openEdit(p)" class="text-on-surface-variant hover:text-on-surface p-2 transition-colors">
-                <span class="material-symbols-outlined">edit</span>
-              </button>
-              <button @click="deletePelanggan(p.id)" class="text-error hover:text-error/80 p-2 transition-colors">
-                <span class="material-symbols-outlined">delete</span>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              </td>
+              <td class="px-6 py-4">
+                <div class="text-slate-900 dark:text-slate-100 font-medium">{{ p.email }}</div>
+                <div class="text-slate-500 dark:text-slate-400 text-label-sm">{{ p.telepon }}</div>
+              </td>
+              <td class="px-6 py-4">
+                <StatusBadge :status="p.level?.toLowerCase() || 'basic'" />
+              </td>
+              <td class="px-6 py-4 text-center font-semibold text-slate-800 dark:text-slate-200">{{ p.transaksi?.length || 0 }}</td>
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <button @click="openEdit(p)" title="Edit"
+                    class="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-secondary dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    <span class="material-symbols-outlined" style="font-size:20px">edit</span>
+                  </button>
+                  <button @click="deletePelanggan(p.id)" title="Hapus"
+                    class="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors">
+                    <span class="material-symbols-outlined" style="font-size:20px">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <!-- Pagination -->
-      <div v-if="pagination" class="bg-surface border-t border-outline-variant px-6 py-4 flex items-center justify-between">
-        <span class="text-on-surface-variant text-label-sm font-label-sm">
+      <div v-if="pagination" class="bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200 dark:border-slate-700/80 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <span class="text-slate-500 dark:text-slate-400 text-label-sm font-label-sm">
           Menampilkan {{ ((pagination.current_page - 1) * pagination.per_page) + (pelanggan.length > 0 ? 1 : 0) }}-{{ ((pagination.current_page - 1) * pagination.per_page) + pelanggan.length }} dari {{ pagination.total }} pelanggan
         </span>
         <div class="flex gap-2">
           <button 
             :disabled="!pagination.prev_page_url" 
             @click="changePage(pagination.current_page - 1)"
-            class="px-3 py-1 rounded-lg text-secondary font-bold text-label-md disabled:opacity-50">
+            class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-secondary dark:text-blue-400 font-bold text-label-md hover:bg-white dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
             Prev
           </button>
-          <button 
-            class="px-3 py-1 rounded-lg bg-secondary text-on-primary font-bold text-label-md">
+          <span class="px-3 py-1.5 rounded-lg bg-secondary text-on-secondary font-bold text-label-md">
             {{ pagination.current_page }}
-          </button>
+          </span>
           <button 
             :disabled="!pagination.next_page_url" 
             @click="changePage(pagination.current_page + 1)"
-            class="px-3 py-1 rounded-lg text-secondary font-bold text-label-md disabled:opacity-50">
+            class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-secondary dark:text-blue-400 font-bold text-label-md hover:bg-white dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
             Next
           </button>
         </div>
@@ -118,20 +142,20 @@
     <!-- Modal Tambah/Edit -->
     <BaseModal v-model="showForm" max-width="560px">
       <template #header>
-        <h2 class="text-headline-md font-headline-md font-bold text-primary">
+        <h2 class="text-headline-md font-headline-md font-bold text-slate-900 dark:text-white">
           {{ isEdit ? 'Edit Pelanggan' : 'Tambah Pelanggan Baru' }}
         </h2>
       </template>
 
-      <div class="flex flex-col gap-5">
+      <form @submit.prevent="savePelanggan" class="flex flex-col gap-4">
         <FormField label="Nama Lengkap">
-          <input v-model="formData.nama" type="text" placeholder="Masukkan nama lengkap" class="form-input" />
+          <input v-model="formData.nama" type="text" placeholder="Masukkan nama lengkap" class="form-input" required />
         </FormField>
         <FormField label="Email">
-          <input v-model="formData.email" type="email" placeholder="contoh@email.com" class="form-input" />
+          <input v-model="formData.email" type="email" placeholder="contoh@email.com" class="form-input" required />
         </FormField>
         <FormField label="No. HP">
-          <input v-model="formData.telepon" type="tel" placeholder="0812xxxxxx" class="form-input" />
+          <input v-model="formData.telepon" type="tel" placeholder="0812xxxxxx" class="form-input" required />
         </FormField>
         <FormField label="Alamat">
           <textarea v-model="formData.alamat" rows="2" placeholder="Alamat lengkap" class="form-input resize-none"></textarea>
@@ -144,30 +168,30 @@
           </select>
         </FormField>
         <!-- Upload KTP -->
-        <FormField label="Upload Foto KTP">
-          <div class="border-2 border-dashed border-outline-variant rounded-xl p-6 flex flex-col
-                      items-center gap-3 bg-surface-container-lowest hover:bg-surface-container-low
+        <FormField label="Upload Foto KTP (Opsional)">
+          <div class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 flex flex-col
+                      items-center gap-2 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-900
                       transition-colors cursor-pointer">
-            <div class="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary">
+            <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-secondary dark:text-blue-400">
               <span class="material-symbols-outlined">add_photo_alternate</span>
             </div>
-            <p class="text-label-md font-label-md text-center">
-              <span class="text-secondary font-semibold">Klik untuk unggah</span> atau seret file ke sini
+            <p class="text-label-md font-label-md text-center text-slate-700 dark:text-slate-300">
+              <span class="text-secondary dark:text-blue-400 font-semibold">Klik untuk unggah</span> atau seret file ke sini
             </p>
-            <p class="text-label-sm font-label-sm text-on-surface-variant">PNG, JPG · maks 5MB</p>
+            <p class="text-label-sm font-label-sm text-slate-400 dark:text-slate-500">PNG, JPG · maks 5MB</p>
           </div>
         </FormField>
-      </div>
+      </form>
 
       <template #footer>
         <button @click="showForm = false"
-          class="px-5 py-2.5 rounded-lg border border-primary text-primary bg-white
-                 hover:bg-surface-container text-label-md font-label-md font-semibold transition-colors">
+          class="px-5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700
+                 hover:bg-slate-100 dark:hover:bg-slate-600 text-label-md font-semibold transition-colors">
           Batal
         </button>
         <button @click="savePelanggan"
           class="px-5 py-2.5 rounded-lg bg-secondary text-on-secondary text-label-md
-                 font-label-md font-bold hover:bg-secondary-container transition-colors shadow-sm">
+                 font-bold hover:bg-secondary-container transition-colors shadow-sm">
           {{ isEdit ? 'Simpan Perubahan' : 'Simpan Pelanggan' }}
         </button>
       </template>
@@ -196,6 +220,11 @@ const pelanggan = ref([])
 const loading = ref(false)
 const currentPage = ref(1)
 const pagination = ref(null)
+
+function resetFilters() {
+  search.value = ''
+  filterLevel.value = ''
+}
 
 const fetchPelanggan = async () => {
   loading.value = true
@@ -240,6 +269,11 @@ function openTambah() { isEdit.value = false; formData.value = emptyForm(); show
 function openEdit(p)  { isEdit.value = true;  formData.value = { ...p };  showForm.value = true }
 
 async function savePelanggan() {
+  if (!formData.value.nama || !formData.value.email) {
+    toast.error('Error', 'Nama dan Email wajib diisi.')
+    return
+  }
+
   try {
     if (isEdit.value) {
       await api.put(`/pelanggan/${formData.value.id}`, formData.value)
@@ -251,7 +285,7 @@ async function savePelanggan() {
     showForm.value = false
     fetchPelanggan()
   } catch (error) {
-    toast.error('Gagal', 'Tidak dapat menyimpan data pelanggan.')
+    toast.error('Gagal', error.response?.data?.message || 'Tidak dapat menyimpan data pelanggan.')
   }
 }
 
@@ -270,11 +304,3 @@ async function deletePelanggan(id) {
   }
 }
 </script>
-
-<style>
-.form-input {
-  @apply w-full bg-surface-container-lowest border border-outline/40 rounded-lg px-4 py-2.5
-         text-body-md font-body-md text-on-surface placeholder:text-on-surface-variant/50
-         focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all;
-}
-</style>

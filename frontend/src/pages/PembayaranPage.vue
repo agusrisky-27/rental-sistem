@@ -1,17 +1,13 @@
 <template>
   <div>
-    <div class="flex justify-between items-end mb-8">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
       <div>
-        <h1 class="text-headline-lg font-headline-lg text-primary mb-2">Manajemen Pembayaran</h1>
-        <p class="text-body-md font-body-md text-on-surface-variant">Verifikasi dan kelola transaksi pembayaran pelanggan.</p>
+        <h1 class="text-headline-lg font-headline-lg font-bold text-slate-900 dark:text-white">Manajemen Pembayaran</h1>
+        <p class="text-body-md font-body-md text-slate-500 dark:text-slate-400 mt-1">Verifikasi dan kelola transaksi pembayaran pelanggan.</p>
       </div>
-      <div class="flex gap-4">
-        <button class="bg-surface border border-outline-variant px-4 py-2 rounded-lg text-label-md font-label-md
-                       hover:bg-surface-container-low flex items-center gap-2 text-secondary transition-colors">
-          <span class="material-symbols-outlined" style="font-size:18px">filter_list</span>
-          Filter
-        </button>
-        <button class="bg-secondary text-on-secondary px-4 py-2 rounded-lg text-label-md font-label-md font-bold
+      <div class="flex gap-3">
+        <button class="bg-secondary text-on-secondary px-5 py-2.5 rounded-lg text-label-md font-bold
                        hover:bg-secondary-container flex items-center gap-2 shadow-sm transition-colors">
           <span class="material-symbols-outlined" style="font-size:18px">download</span>
           Export Laporan
@@ -22,15 +18,14 @@
     <!-- Stats -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <div v-for="stat in stats" :key="stat.label"
-        class="glass-card rounded-xl p-6
-               shadow-[0px_4px_20px_rgba(15,23,42,0.05)] relative overflow-hidden">
+        class="glass-card rounded-xl p-6 relative overflow-hidden transition-all shadow-sm">
         <div class="flex justify-between items-start mb-4">
-          <p class="text-label-md font-label-md text-on-surface-variant">{{ stat.label }}</p>
+          <p class="text-label-md font-label-md text-slate-500 dark:text-slate-400">{{ stat.label }}</p>
           <div class="w-10 h-10 rounded-full flex items-center justify-center" :class="stat.iconBg">
             <span class="material-symbols-outlined" :class="stat.iconColor">{{ stat.icon }}</span>
           </div>
         </div>
-        <h3 class="text-headline-lg font-headline-lg text-primary">{{ stat.value }}</h3>
+        <h3 class="text-headline-lg font-headline-lg font-bold text-slate-900 dark:text-white">{{ stat.value }}</h3>
         <p class="text-label-sm font-label-sm mt-2 flex items-center gap-1" :class="stat.trendColor">
           <span class="material-symbols-outlined" style="font-size:14px">{{ stat.trendIcon }}</span>
           {{ stat.trend }}
@@ -39,96 +34,126 @@
     </div>
 
     <!-- Filters -->
-    <div class="bg-surface rounded-xl shadow-sm border border-outline-variant p-4 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-      <div class="flex flex-wrap gap-4 w-full md:w-auto">
-        <div class="relative w-full md:w-64">
-          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style="font-size:18px">search</span>
-          <input v-model="search" type="text" placeholder="Cari Pelanggan..."
-            class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg
-                   text-body-md font-body-md focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/50 transition-all" />
+    <div class="filter-panel mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div class="flex flex-wrap gap-3 w-full md:w-auto">
+        <!-- Search -->
+        <div class="relative w-full md:w-80">
+          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary dark:text-blue-400 pointer-events-none transition-colors" style="font-size:20px">search</span>
+          <input v-model="search" type="text" placeholder="Cari pelanggan, ID transaksi..."
+            class="search-input-field" />
+          <button v-if="search" @click="search = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            <span class="material-symbols-outlined" style="font-size:18px">close</span>
+          </button>
         </div>
+
+        <!-- Status Filter -->
+        <select v-model="filterStatus"
+          class="form-input md:w-48 py-2.5">
+          <option value="">Semua Status</option>
+          <option value="menunggu verifikasi">Menunggu Verifikasi</option>
+          <option value="berhasil">Berhasil</option>
+          <option value="ditolak">Ditolak</option>
+        </select>
+      </div>
+
+      <div v-if="search || filterStatus" class="flex justify-end w-full md:w-auto">
+        <button @click="search = ''; filterStatus = ''" class="text-xs font-semibold text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center gap-1">
+          <span class="material-symbols-outlined" style="font-size:16px">restart_alt</span>
+          Reset
+        </button>
       </div>
     </div>
 
     <!-- Table -->
-    <div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(15,23,42,0.05)] overflow-hidden border border-outline-variant/30 relative">
-      <div class="p-6 border-b border-surface-container-high flex justify-between items-center bg-surface-bright">
-        <h2 class="text-headline-md font-headline-md text-primary">Daftar Transaksi</h2>
+    <div class="table-panel">
+      <div class="p-5 border-b border-slate-200 dark:border-slate-700/80 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/60">
+        <h2 class="text-headline-md font-headline-md font-bold text-slate-900 dark:text-white">Daftar Pembayaran</h2>
       </div>
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="bg-surface-container-low text-on-surface-variant text-label-md font-label-md border-b border-surface-container-high">
-            <th class="py-4 px-6 font-semibold">ID Transaksi</th>
-            <th class="py-4 px-6 font-semibold">Pelanggan</th>
-            <th class="py-4 px-6 font-semibold">Metode</th>
-            <th class="py-4 px-6 font-semibold">Jumlah</th>
-            <th class="py-4 px-6 font-semibold">Status</th>
-            <th class="py-4 px-6 font-semibold text-right">Aksi</th>
-          </tr>
-        </thead>
-        <tbody class="text-body-md divide-y divide-surface-container-high">
-          <tr v-if="loading">
-            <td colspan="6" class="text-center py-8 text-on-surface-variant">Memuat data...</td>
-          </tr>
-          <tr v-else-if="filteredPembayaran.length === 0">
-            <td colspan="6" class="text-center py-8 text-on-surface-variant">Tidak ada data pembayaran.</td>
-          </tr>
-          <tr v-for="p in filteredPembayaran" :key="p.id"
-            class="hover:bg-surface-container-lowest transition-colors group">
-            <td class="py-4 px-6 font-semibold text-primary">#{{ p.id }}</td>
-            <td class="py-4 px-6">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-secondary-fixed text-on-secondary-fixed
-                            flex items-center justify-center font-bold text-label-sm">
-                  {{ initials(p.transaksi?.pelanggan?.nama || '') }}
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 text-label-md font-label-md border-b border-slate-200 dark:border-slate-700/80">
+              <th class="py-4 px-6 font-semibold">ID Transaksi</th>
+              <th class="py-4 px-6 font-semibold">Pelanggan</th>
+              <th class="py-4 px-6 font-semibold">Metode</th>
+              <th class="py-4 px-6 font-semibold">Jumlah</th>
+              <th class="py-4 px-6 font-semibold">Status</th>
+              <th class="py-4 px-6 font-semibold text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="text-body-md divide-y divide-slate-100 dark:divide-slate-700/50">
+            <tr v-if="loading">
+              <td colspan="6" class="text-center py-10 text-slate-500 dark:text-slate-400">
+                <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-secondary border-t-transparent mb-2"></div>
+                <p>Memuat data pembayaran...</p>
+              </td>
+            </tr>
+            <tr v-else-if="filteredPembayaran.length === 0">
+              <td colspan="6" class="text-center py-10 text-slate-500 dark:text-slate-400">
+                <span class="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2 block">payments</span>
+                Tidak ada data pembayaran ditemukan.
+              </td>
+            </tr>
+            <tr v-for="p in filteredPembayaran" :key="p.id"
+              class="hover:bg-slate-50/80 dark:hover:bg-slate-750/50 transition-colors group">
+              <td class="py-4 px-6 font-semibold font-mono text-sm text-secondary dark:text-blue-400">#{{ p.id }}</td>
+              <td class="py-4 px-6">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/60 text-secondary dark:text-blue-300
+                              flex items-center justify-center font-bold text-label-sm shrink-0">
+                    {{ initials(p.transaksi?.pelanggan?.nama || '') }}
+                  </div>
+                  <div>
+                    <p class="font-medium text-slate-900 dark:text-slate-100">{{ p.transaksi?.pelanggan?.nama || '-' }}</p>
+                    <p class="text-xs text-slate-400 dark:text-slate-500">{{ p.transaksi?.pelanggan?.email || '-' }}</p>
+                  </div>
                 </div>
-                <div>
-                  <p class="font-medium text-on-surface">{{ p.transaksi?.pelanggan?.nama || '-' }}</p>
-                  <p class="text-label-sm text-on-surface-variant">{{ p.transaksi?.pelanggan?.email || '-' }}</p>
+              </td>
+              <td class="py-4 px-6 text-slate-700 dark:text-slate-300">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-secondary dark:text-blue-400" style="font-size:20px">{{ metodeIcon(p.metode || '') }}</span>
+                  <span>{{ p.metode }}</span>
                 </div>
-              </div>
-            </td>
-            <td class="py-4 px-6">
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-secondary" style="font-size:20px">{{ metodeIcon(p.metode || '') }}</span>
-                <span>{{ p.metode }}</span>
-              </div>
-            </td>
-            <td class="py-4 px-6 font-medium">{{ formatRupiah(p.jumlah) }}</td>
-            <td class="py-4 px-6">
-              <StatusBadge :status="p.status" />
-            </td>
-            <td class="py-4 px-6 text-right">
-              <!-- Menunggu: approve/reject -->
-              <div v-if="p.status === 'menunggu verifikasi'"
-                class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button @click="tolak(p)"
-                  class="p-1.5 text-error hover:bg-error-container/50 rounded-md transition-colors">
-                  <span class="material-symbols-outlined" style="font-size:20px">close</span>
+              </td>
+              <td class="py-4 px-6 font-semibold text-slate-900 dark:text-slate-100">{{ formatRupiah(p.jumlah) }}</td>
+              <td class="py-4 px-6">
+                <StatusBadge :status="p.status" />
+              </td>
+              <td class="py-4 px-6 text-right">
+                <!-- Menunggu: approve/reject -->
+                <div v-if="p.status === 'menunggu verifikasi'"
+                  class="flex justify-end gap-1.5">
+                  <button @click="tolak(p)" title="Tolak"
+                    class="p-1.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined" style="font-size:20px">close</span>
+                  </button>
+                  <button @click="setujui(p)" title="Setujui"
+                    class="p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined" style="font-size:20px">check</span>
+                  </button>
+                </div>
+                <!-- Berhasil: detail -->
+                <button v-else @click="openDetail(p)"
+                  class="text-secondary dark:text-blue-400 hover:text-secondary-container text-label-md font-semibold transition-colors px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700">
+                  Detail
                 </button>
-                <button @click="setujui(p)"
-                  class="p-1.5 text-secondary hover:bg-primary-fixed/50 rounded-md transition-colors">
-                  <span class="material-symbols-outlined" style="font-size:20px">check</span>
-                </button>
-              </div>
-              <!-- Berhasil: detail -->
-              <button v-else @click="openDetail(p)"
-                class="text-on-surface-variant hover:text-secondary text-label-md font-medium transition-colors">
-                Detail
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <!-- Pagination -->
-      <div class="p-4 border-t border-surface-container-high flex items-center justify-between bg-surface-bright" v-if="pagination">
-        <span class="text-label-md font-label-md text-on-surface-variant">Menampilkan {{ (currentPage - 1) * pagination.per_page + 1 }}-{{ Math.min(currentPage * pagination.per_page, pagination.total) || 0 }} dari {{ pagination.total }}</span>
+      <div class="p-4 border-t border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 dark:bg-slate-900/60" v-if="pagination">
+        <span class="text-label-md font-label-md text-slate-500 dark:text-slate-400">
+          Menampilkan {{ (currentPage - 1) * pagination.per_page + 1 }}-{{ Math.min(currentPage * pagination.per_page, pagination.total) || 0 }} dari {{ pagination.total }}
+        </span>
         <div class="flex gap-1">
           <button v-for="page in pagination.last_page" :key="page"
             @click="changePage(page)"
             :class="[
-              'px-3 py-1 rounded-md font-medium transition-colors',
-              page === currentPage ? 'bg-secondary text-on-secondary' : 'bg-surface text-on-surface hover:bg-surface-container-low border border-outline-variant'
+              'px-3 py-1 rounded-md font-semibold text-sm transition-colors',
+              page === currentPage ? 'bg-secondary text-on-secondary' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
             ]">
             {{ page }}
           </button>
@@ -140,29 +165,29 @@
     <BaseModal v-model="showDetail" max-width="560px">
       <template #header>
         <div class="flex items-center gap-3">
-          <h2 class="text-headline-md font-headline-md text-primary">Detail Pembayaran</h2>
+          <h2 class="text-headline-md font-headline-md font-bold text-slate-900 dark:text-white">Detail Pembayaran</h2>
           <StatusBadge v-if="selected" :status="selected.status" />
         </div>
       </template>
 
-      <div v-if="selected" class="flex flex-col gap-4">
+      <div v-if="selected" class="flex flex-col gap-3">
         <div v-for="row in detailRows" :key="row.label"
-          class="flex justify-between items-center py-2 border-b border-surface-container-high/50 last:border-0">
-          <span class="text-label-md font-label-md text-on-surface-variant">{{ row.label }}</span>
-          <span class="text-body-md font-semibold text-primary">{{ row.value }}</span>
+          class="flex justify-between items-center py-2.5 border-b border-slate-100 dark:border-slate-700/60 last:border-0">
+          <span class="text-label-md text-slate-500 dark:text-slate-400">{{ row.label }}</span>
+          <span class="text-body-md font-semibold text-slate-900 dark:text-white">{{ row.value }}</span>
         </div>
       </div>
 
       <template #footer>
         <button @click="showDetail = false"
-          class="px-5 py-2.5 rounded-lg border border-primary text-primary text-label-md font-semibold
-                 hover:bg-surface-container transition-colors">
+          class="px-5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 text-label-md font-semibold
+                 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
           Tutup
         </button>
         <button v-if="selected?.status === 'menunggu verifikasi'" @click="konfirmasi"
-          class="w-full bg-secondary hover:bg-secondary-container text-on-secondary font-bold py-3 px-4
-                 rounded-lg transition-colors flex items-center justify-center gap-2">
-          <span class="material-symbols-outlined">check_circle</span>
+          class="bg-secondary hover:bg-secondary-container text-on-secondary font-bold py-2.5 px-5
+                 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm">
+          <span class="material-symbols-outlined" style="font-size:18px">check_circle</span>
           Konfirmasi Pembayaran
         </button>
       </template>
@@ -177,25 +202,26 @@ import api from '@/services/api'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import BaseModal   from '@/components/ui/BaseModal.vue'
 
-const toast      = useToastStore()
-const search     = ref('')
-const showDetail = ref(false)
-const selected   = ref(null)
-const loading    = ref(false)
-const currentPage = ref(1)
-const pagination = ref(null)
-const pembayaran = ref([])
+const toast        = useToastStore()
+const search       = ref('')
+const filterStatus = ref('')
+const showDetail   = ref(false)
+const selected     = ref(null)
+const loading      = ref(false)
+const currentPage  = ref(1)
+const pagination   = ref(null)
+const pembayaran   = ref([])
 
 const stats = [
-  { label:'Menunggu Verifikasi', value:'12', icon:'pending_actions', iconBg:'bg-error-container/50',     iconColor:'text-on-error-container',   trend:'+3 dari kemarin',       trendIcon:'arrow_upward', trendColor:'text-error'     },
-  { label:'Berhasil (Hari ini)', value:'48', icon:'check_circle',    iconBg:'bg-primary-fixed/50',       iconColor:'text-secondary',            trend:'+15% dari rata-rata',   trendIcon:'arrow_upward', trendColor:'text-secondary'  },
-  { label:'Total Pending',       value:'Rp 15.450.000', icon:'payments', iconBg:'bg-tertiary-fixed-dim/30', iconColor:'text-on-tertiary-container', trend:'Menunggu konfirmasi', trendIcon:'info',         trendColor:'text-on-surface-variant' },
+  { label:'Menunggu Verifikasi', value:'12', icon:'pending_actions', iconBg:'bg-amber-100 dark:bg-amber-950/60',     iconColor:'text-amber-600 dark:text-amber-400',   trend:'+3 dari kemarin',       trendIcon:'arrow_upward', trendColor:'text-amber-500' },
+  { label:'Berhasil (Hari ini)', value:'48', icon:'check_circle',    iconBg:'bg-emerald-100 dark:bg-emerald-950/60', iconColor:'text-emerald-600 dark:text-emerald-400', trend:'+15% dari rata-rata',   trendIcon:'arrow_upward', trendColor:'text-emerald-500'  },
+  { label:'Total Pending',       value:'Rp 15.450.000', icon:'payments', iconBg:'bg-blue-100 dark:bg-blue-950/60', iconColor:'text-secondary dark:text-blue-400', trend:'Menunggu konfirmasi', trendIcon:'info',         trendColor:'text-slate-400' },
 ]
 
 const fetchPembayaran = async () => {
   loading.value = true
   try {
-    const response = await api.get(`/pembayaran?page=${currentPage.value}&status=`)
+    const response = await api.get(`/pembayaran?page=${currentPage.value}&status=${filterStatus.value}`)
     pembayaran.value = response.data.data
     pagination.value = {
       current_page: response.data.current_page,
@@ -214,6 +240,11 @@ onMounted(() => {
   fetchPembayaran()
 })
 
+watch(filterStatus, () => {
+  currentPage.value = 1
+  fetchPembayaran()
+})
+
 const changePage = (page) => {
   currentPage.value = page
   fetchPembayaran()
@@ -223,7 +254,9 @@ const filteredPembayaran = computed(() => {
   if (!search.value) return pembayaran.value
   const q = search.value.toLowerCase()
   return pembayaran.value.filter(p => 
-    p.transaksi?.pelanggan?.nama?.toLowerCase().includes(q)
+    String(p.id).includes(q) ||
+    p.transaksi?.pelanggan?.nama?.toLowerCase().includes(q) ||
+    p.metode?.toLowerCase().includes(q)
   )
 })
 
@@ -241,8 +274,8 @@ function initials(name) {
 }
 function formatRupiah(n) { return 'Rp ' + Number(n).toLocaleString('id-ID') }
 function metodeIcon(m) {
-  if (m.includes('QRIS')) return 'qr_code_scanner'
-  if (m.includes('Bank')) return 'account_balance'
+  if (m?.includes('QRIS')) return 'qr_code_scanner'
+  if (m?.includes('Bank')) return 'account_balance'
   return 'payments'
 }
 function openDetail(p) { selected.value = p; showDetail.value = true }

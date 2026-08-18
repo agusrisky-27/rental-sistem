@@ -1,10 +1,10 @@
 <template>
   <RouterLink :to="to"
-    class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-label-md font-label-md"
+    class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition-all text-label-md font-label-md"
     :class="isActive
-      ? 'bg-secondary-fixed text-secondary dark:bg-gray-800 dark:text-blue-400'
-      : 'text-primary dark:text-gray-300 hover:text-secondary dark:hover:text-white hover:bg-surface-container-low dark:hover:bg-gray-700'">
-    <span class="material-symbols-outlined"
+      ? 'bg-blue-50 text-secondary dark:bg-blue-500/15 dark:text-blue-400 font-semibold shadow-sm'
+      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 font-medium'">
+    <span class="material-symbols-outlined transition-transform duration-200"
       :style="isActive ? { fontVariationSettings: `'FILL' 1` } : {}">
       {{ icon }}
     </span>

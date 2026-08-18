@@ -1,27 +1,27 @@
 <template>
-  <div class="fixed top-20 right-8 z-50 flex flex-col gap-4 pointer-events-none">
+  <div class="fixed top-20 right-8 z-50 flex flex-col gap-3 pointer-events-none">
     <TransitionGroup name="toast">
       <div v-for="toast in toastStore.toasts" :key="toast.id"
-        class="w-80 bg-surface rounded-xl shadow-[0px_10px_30px_rgba(15,23,42,0.1)]
-               flex items-start gap-3 p-4 pointer-events-auto animate-slide-in-right"
+        class="w-84 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700
+               flex items-start gap-3 p-4 pointer-events-auto animate-slide-in-right transition-colors"
         :class="borderClass(toast.type)">
 
         <!-- Icon -->
-        <span class="material-symbols-outlined mt-0.5 fill" :class="iconColor(toast.type)">
+        <span class="material-symbols-outlined mt-0.5 fill text-xl" :class="iconColor(toast.type)">
           {{ iconName(toast.type) }}
         </span>
 
         <!-- Content -->
-        <div class="flex-1">
-          <p class="text-label-md font-label-md font-bold text-on-surface">{{ toast.title }}</p>
-          <p v-if="toast.message" class="text-label-sm font-label-sm text-on-surface-variant mt-1">
+        <div class="flex-1 min-w-0">
+          <p class="text-label-md font-bold text-slate-900 dark:text-white">{{ toast.title }}</p>
+          <p v-if="toast.message" class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">
             {{ toast.message }}
           </p>
         </div>
 
         <!-- Dismiss -->
         <button @click="toastStore.remove(toast.id)"
-          class="text-on-surface-variant hover:text-on-surface p-1 transition-colors">
+          class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
           <span class="material-symbols-outlined" style="font-size:18px">close</span>
         </button>
       </div>
@@ -36,19 +36,19 @@ const toastStore = useToastStore()
 function borderClass(type) {
   return {
     success: 'border-l-4 border-l-emerald-500',
-    error:   'border-l-4 border-l-error',
-    warning: 'border-l-4 border-l-amber-400',
-    info:    'border-l-4 border-l-secondary',
-  }[type] || 'border-l-4 border-l-secondary'
+    error:   'border-l-4 border-l-rose-500',
+    warning: 'border-l-4 border-l-amber-500',
+    info:    'border-l-4 border-l-secondary dark:border-l-blue-400',
+  }[type] || 'border-l-4 border-l-secondary dark:border-l-blue-400'
 }
 
 function iconColor(type) {
   return {
     success: 'text-emerald-500',
-    error:   'text-error',
-    warning: 'text-amber-400',
-    info:    'text-secondary',
-  }[type] || 'text-secondary'
+    error:   'text-rose-500',
+    warning: 'text-amber-500',
+    info:    'text-secondary dark:text-blue-400',
+  }[type] || 'text-secondary dark:text-blue-400'
 }
 
 function iconName(type) {

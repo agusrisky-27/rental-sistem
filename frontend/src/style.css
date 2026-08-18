@@ -1,32 +1,111 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: light dark;
+}
+
+/* Material Symbols configuration */
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  line-height: 1;
 }
 .material-symbols-outlined.fill {
   font-variation-settings: 'FILL' 1;
 }
 
+/* Glassmorphism Cards */
 .glass-card {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
-.nav-item-active {
-  position: relative;
+html.dark .glass-card {
+  background: rgba(30, 41, 59, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.6);
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.8);
+}
+
+@layer components {
+  /* High-contrast, clean Form Input with distinct Dark Mode depth */
+  .form-input {
+    @apply w-full bg-white dark:bg-slate-900 
+           border border-slate-200 dark:border-slate-700 
+           rounded-lg px-4 py-2.5 
+           text-body-md font-body-md text-slate-800 dark:text-slate-100 
+           placeholder:text-slate-400 dark:placeholder:text-slate-500
+           focus:outline-none focus:border-secondary dark:focus:border-blue-500 
+           focus:ring-2 focus:ring-secondary/20 dark:focus:ring-blue-500/30 
+           transition-all;
+  }
+
+  /* Search Input with distinct inset background and high contrast */
+  .search-input-field {
+    @apply w-full pl-10 pr-9 py-2.5 
+           bg-slate-50 dark:bg-slate-900/90 
+           border border-slate-200 dark:border-slate-700/80 
+           rounded-lg text-body-md font-body-md 
+           text-slate-800 dark:text-slate-100 
+           placeholder:text-slate-400 dark:placeholder:text-slate-400
+           focus:outline-none focus:bg-white dark:focus:bg-slate-900 
+           focus:border-secondary dark:focus:border-blue-500 
+           focus:ring-2 focus:ring-secondary/20 dark:focus:ring-blue-500/25 
+           shadow-inner dark:shadow-none transition-all;
+  }
+
+  /* Filter Container Card with clear elevation */
+  .filter-panel {
+    @apply bg-white dark:bg-slate-800/90 
+           border border-slate-200 dark:border-slate-700/80 
+           rounded-xl p-4 shadow-sm backdrop-blur-sm transition-colors;
+  }
+
+  /* Table Card container */
+  .table-panel {
+    @apply bg-white dark:bg-slate-800 
+           border border-slate-200 dark:border-slate-700/80 
+           rounded-xl shadow-sm overflow-hidden transition-colors;
+  }
 }
 
 @layer utilities {
   .input-glow:focus {
     box-shadow: 0 0 0 3px rgba(0, 88, 190, 0.2);
     border-color: #0058be;
+  }
+  html.dark .input-glow:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    border-color: #3b82f6;
   }
 }
 
@@ -36,7 +115,7 @@
   to   { opacity: 1; transform: translateY(0)   scale(1);    }
 }
 .animate-fade-in-up {
-  animation: fadeInUp 0.25s ease-out forwards;
+  animation: fadeInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Toast animation */
@@ -45,53 +124,15 @@
   to   { opacity: 1; transform: translateX(0);    }
 }
 .animate-slide-in-right {
-  animation: slideInRight 0.3s ease-out forwards;
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Global Dark Mode Overrides */
+/* Global Dark Mode Overrides for Base Elements */
 html.dark body {
-  background-color: #111827 !important;
-  color: #f9fafb !important;
+  background-color: #0f172a;
+  color: #f8fafc;
 }
-html.dark .bg-surface, 
-html.dark .bg-surface-container-low, 
-html.dark .bg-surface-container-lowest, 
-html.dark .bg-surface-container-high,
-html.dark .bg-surface-container-highest,
-html.dark .bg-surface-container,
-html.dark .bg-surface-bright {
-  background-color: #1f2937 !important;
-  color: #f9fafb !important;
-  border-color: #374151 !important;
-}
-html.dark .text-on-surface, 
-html.dark .text-primary, 
-html.dark .text-on-surface-variant {
-  color: #f9fafb !important;
-}
-html.dark .border-surface-variant, 
-html.dark .border-outline-variant,
-html.dark .border-outline {
-  border-color: #374151 !important;
-}
-html.dark .glass-card {
-  background: rgba(31, 41, 55, 0.7) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-html.dark input, 
-html.dark select, 
-html.dark textarea {
-  background-color: #374151 !important;
-  color: #f9fafb !important;
-  border-color: #4b5563 !important;
-}
-html.dark table th {
-  background-color: #111827 !important;
-  color: #d1d5db !important;
-}
-html.dark table tr:hover td {
-  background-color: #374151 !important;
-}
-html.dark .material-symbols-outlined {
-  color: currentColor;
+
+html.dark {
+  background-color: #0f172a;
 }

@@ -1,72 +1,68 @@
 <template>
-  <div class="min-h-screen bg-white flex items-center justify-center p-4">
+  <div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 transition-colors">
     <div class="w-full max-w-md">
-      <div class="bg-white rounded-xl p-8 shadow-lg border border-slate-200 flex flex-col gap-6">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-6 transition-colors">
 
         <!-- Header -->
         <div class="text-center">
-          <img src="/logo.png" alt="SewaKen Logo" class="w-20 h-20 object-contain mx-auto mb-4" />
-          <h1 class="text-headline-md font-headline-md font-bold text-on-surface mb-1">
+          <img src="/logo.png" alt="SewaKen Logo" class="w-16 h-16 object-contain mx-auto mb-3" />
+          <h1 class="text-headline-md font-headline-md font-bold text-slate-900 dark:text-white mb-1">
             Selamat Datang di SewaKen
           </h1>
-          <p class="text-body-md font-body-md text-on-surface-variant">
+          <p class="text-body-md font-body-md text-slate-500 dark:text-slate-400">
             Solusi Sewa Kendaraan Terpercaya
           </p>
         </div>
 
         <!-- Form -->
-        <div class="flex flex-col gap-5">
+        <form @submit.prevent="handleLogin" class="flex flex-col gap-5">
           <!-- Email -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-label-md font-label-md text-on-surface">Email</label>
+            <label class="text-label-md font-medium text-slate-700 dark:text-slate-300">Email</label>
             <div class="relative">
-              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline"
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
                 style="font-size:18px">mail</span>
-              <input v-model="form.email" type="email" placeholder="nama@email.com"
-                class="w-full pl-10 pr-4 py-3 border border-outline-variant rounded-lg
-                       bg-white text-on-surface focus:outline-none input-glow transition-all
-                       placeholder:text-outline" />
+              <input v-model="form.email" type="email" placeholder="nama@email.com" required
+                class="form-input pl-10 py-3" />
             </div>
           </div>
 
           <!-- Password -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-label-md font-label-md text-on-surface">Password</label>
+            <label class="text-label-md font-medium text-slate-700 dark:text-slate-300">Password</label>
             <div class="relative">
-              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline"
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
                 style="font-size:18px">lock</span>
-              <input v-model="form.password" type="password" placeholder="••••••••"
-                class="w-full pl-10 pr-4 py-3 border border-outline-variant rounded-lg
-                       bg-white text-on-surface focus:outline-none input-glow transition-all
-                       placeholder:text-outline" />
+              <input v-model="form.password" type="password" placeholder="••••••••" required
+                class="form-input pl-10 py-3" />
             </div>
           </div>
 
           <!-- Remember / Forgot -->
-          <div class="flex justify-between items-center">
+          <div class="flex justify-between items-center text-sm">
             <label class="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" v-model="form.remember"
-                class="rounded border-outline-variant text-secondary focus:ring-secondary/30" />
-              <span class="text-label-sm font-label-sm text-on-surface-variant">Ingat saya</span>
+                class="rounded border-slate-300 dark:border-slate-600 text-secondary focus:ring-secondary/30" />
+              <span class="text-slate-600 dark:text-slate-400">Ingat saya</span>
             </label>
-            <a href="#" class="text-label-sm font-label-sm text-secondary hover:underline">
+            <a href="#" class="text-secondary dark:text-blue-400 hover:underline">
               Lupa Password?
             </a>
           </div>
 
           <!-- Submit -->
-          <button @click="handleLogin" :disabled="loading"
+          <button type="submit" :disabled="loading"
             class="mt-2 bg-secondary hover:bg-secondary-container text-on-secondary font-bold
-                   py-4 rounded-lg flex justify-center items-center gap-2 transition-all
-                   shadow-[0px_4px_20px_rgba(0,88,190,0.3)] disabled:opacity-60">
-            <span v-if="loading" class="material-symbols-outlined animate-spin">progress_activity</span>
+                   py-3.5 rounded-lg flex justify-center items-center gap-2 transition-all
+                   shadow-sm disabled:opacity-60">
+            <span v-if="loading" class="material-symbols-outlined animate-spin" style="font-size:20px">progress_activity</span>
             <span v-else>Masuk Ke Dashboard</span>
             <span v-if="!loading" class="material-symbols-outlined" style="font-size:20px">arrow_forward</span>
           </button>
 
           <!-- Error -->
-          <p v-if="error" class="text-label-sm text-error text-center">{{ error }}</p>
-        </div>
+          <p v-if="error" class="text-sm font-medium text-rose-500 text-center">{{ error }}</p>
+        </form>
       </div>
     </div>
   </div>
