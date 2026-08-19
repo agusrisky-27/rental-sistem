@@ -13,7 +13,8 @@ class PembayaranController extends Controller
     {
         $query = Pembayaran::with(['transaksi.pelanggan', 'transaksi.kendaraan'])->latest();
         if ($request->status) $query->where('status', $request->status);
-        return response()->json($query->paginate(10));
+        $perPage = min($request->input('per_page', 10), 1000);
+        return response()->json($query->paginate($perPage));
     }
 
     public function stats()
@@ -52,8 +53,12 @@ class PembayaranController extends Controller
 
     public function update(Request $request, Pembayaran $pembayaran)
     {
-        $pembayaran->update($request->only(['status']));
-        return response()->json($pembayaran);
+        $data = $request->validate([
+            'status' => 'required|in:menunggu verifikasi,berhasil,ditolak',
+        ]);
+
+        $pembayaran->update($data);
+        return response()->json($pembayaran->load('transaksi.pelanggan', 'transaksi.kendaraan'));
     }
 
     public function destroy(Pembayaran $pembayaran)

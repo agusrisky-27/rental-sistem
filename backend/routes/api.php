@@ -43,6 +43,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'readAll']);
     Route::patch('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read']);
 
-    Route::patch('/auth/profile', [AuthController::class, 'updateProfile']);
+    Route::post('/auth/profile', [AuthController::class, 'updateProfile']);
     Route::patch('/auth/password', [AuthController::class, 'updatePassword']);
 });

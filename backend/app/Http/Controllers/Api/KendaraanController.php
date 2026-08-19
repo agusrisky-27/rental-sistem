@@ -28,7 +28,8 @@ class KendaraanController extends Controller
             $query->where('status', $request->status);
         }
 
-        return response()->json($query->paginate(10));
+        $perPage = min($request->input('per_page', 10), 1000);
+        return response()->json($query->paginate($perPage));
     }
 
     public function store(Request $request)

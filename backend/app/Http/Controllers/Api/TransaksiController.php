@@ -29,7 +29,8 @@ class TransaksiController extends Controller
             });
         }
 
-        return response()->json($query->paginate(10));
+        $perPage = min($request->input('per_page', 10), 1000);
+        return response()->json($query->paginate($perPage));
     }
 
     public function store(Request $request)
@@ -63,15 +64,17 @@ class TransaksiController extends Controller
 
     public function update(Request $request, Transaksi $transaksi)
     {
-        $data = $request->only(['status']);
+        $data = $request->validate([
+            'status' => 'required|in:menunggu,aktif,selesai,dibatalkan',
+        ]);
 
         // Jika transaksi dibatalkan/ditolak, kembalikan status kendaraan menjadi tersedia
-        if (($data['status'] ?? null) === 'dibatalkan' && $transaksi->status !== 'dibatalkan') {
+        if ($data['status'] === 'dibatalkan' && $transaksi->status !== 'dibatalkan') {
             $transaksi->kendaraan->update(['status' => 'tersedia']);
         }
 
         $transaksi->update($data);
-        return response()->json($transaksi);
+        return response()->json($transaksi->load(['kendaraan', 'pelanggan']));
     }
 
     public function destroy(Transaksi $transaksi)
