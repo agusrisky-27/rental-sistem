@@ -20,8 +20,7 @@
           <div class="flex flex-col gap-1.5">
             <label class="text-label-md font-medium text-slate-700 dark:text-slate-300">Email</label>
             <div class="relative">
-              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
-                style="font-size:18px">mail</span>
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 icon-18">mail</span>
               <input v-model="form.email" type="email" placeholder="nama@email.com" required
                 class="form-input pl-10 py-3" />
             </div>
@@ -31,8 +30,7 @@
           <div class="flex flex-col gap-1.5">
             <label class="text-label-md font-medium text-slate-700 dark:text-slate-300">Password</label>
             <div class="relative">
-              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
-                style="font-size:18px">lock</span>
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 icon-18">lock</span>
               <input v-model="form.password" type="password" placeholder="••••••••" required
                 class="form-input pl-10 py-3" />
             </div>
@@ -55,9 +53,9 @@
             class="mt-2 bg-secondary hover:bg-secondary-container text-on-secondary font-bold
                    py-3.5 rounded-lg flex justify-center items-center gap-2 transition-all
                    shadow-sm disabled:opacity-60">
-            <span v-if="loading" class="material-symbols-outlined animate-spin" style="font-size:20px">progress_activity</span>
+            <span v-if="loading" class="material-symbols-outlined animate-spin icon-20">progress_activity</span>
             <span v-else>Masuk Ke Dashboard</span>
-            <span v-if="!loading" class="material-symbols-outlined" style="font-size:20px">arrow_forward</span>
+            <span v-if="!loading" class="material-symbols-outlined icon-20">arrow_forward</span>
           </button>
 
           <!-- Error -->

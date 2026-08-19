@@ -34,18 +34,18 @@
       <div class="flex flex-wrap gap-3 w-full md:w-auto">
         <!-- Search -->
         <div class="relative w-full md:w-80">
-          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary dark:text-blue-400 pointer-events-none transition-colors" style="font-size:20px">search</span>
+          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary dark:text-blue-400 pointer-events-none transition-colors icon-20">search</span>
           <input v-model="search" type="text" placeholder="Cari Nopol, kendaraan, atau pelanggan..."
             class="search-input-field" />
           <button v-if="search" @click="search = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-            <span class="material-symbols-outlined" style="font-size:18px">close</span>
+            <span class="material-symbols-outlined icon-18">close</span>
           </button>
         </div>
       </div>
 
       <div v-if="search" class="flex justify-end w-full md:w-auto">
         <button @click="search = ''" class="text-xs font-semibold text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center gap-1">
-          <span class="material-symbols-outlined" style="font-size:16px">restart_alt</span>
+          <span class="material-symbols-outlined icon-16">restart_alt</span>
           Reset
         </button>
       </div>
@@ -117,7 +117,7 @@
                   Terima
                 </button>
                 <span v-else class="text-label-md text-emerald-600 dark:text-emerald-400 font-semibold flex items-center justify-end gap-1">
-                  <span class="material-symbols-outlined" style="font-size:18px">check_circle</span>
+                  <span class="material-symbols-outlined icon-18">check_circle</span>
                   Selesai
                 </span>
               </td>

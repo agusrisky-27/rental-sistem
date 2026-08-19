@@ -1,0 +1,16 @@
+/* Transaksi Page Specific Styles */
+.stepper-container {
+  @apply relative flex items-center justify-between w-full pb-4;
+}
+
+.stepper-bg-line {
+  @apply absolute top-4 left-4 right-4 h-0.5 bg-slate-200 dark:bg-slate-700 -z-10;
+}
+
+.stepper-active-line {
+  @apply absolute top-4 left-4 h-0.5 bg-secondary dark:bg-blue-500 -z-10 transition-all duration-300;
+}
+
+.stepper-step-node {
+  @apply w-8 h-8 rounded-full flex items-center justify-center shadow-sm text-xs font-bold transition-all;
+}

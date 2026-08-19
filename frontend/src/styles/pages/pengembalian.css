@@ -1,0 +1,4 @@
+/* Pengembalian Page Specific Styles */
+.pengembalian-stat-card {
+  @apply glass-card p-4 rounded-xl flex items-center gap-4 shadow-sm;
+}

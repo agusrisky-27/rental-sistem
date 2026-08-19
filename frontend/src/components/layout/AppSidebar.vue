@@ -35,7 +35,7 @@
       <button @click="handleLogout"
         class="w-full flex items-center gap-3 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 px-4 py-2.5
                transition-colors rounded-lg font-medium text-label-md">
-        <span class="material-symbols-outlined" style="font-size:20px">logout</span>
+        <span class="material-symbols-outlined icon-20">logout</span>
         <span>Keluar</span>
       </button>
     </div>

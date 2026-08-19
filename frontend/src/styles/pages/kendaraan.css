@@ -1,0 +1,9 @@
+/* Kendaraan Page Specific Styles */
+.kendaraan-card {
+  @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 
+         rounded-2xl shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col;
+}
+
+.kendaraan-thumb {
+  @apply w-full h-44 object-cover;
+}

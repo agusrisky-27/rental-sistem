@@ -6,7 +6,7 @@
     <!-- Page title / breadcrumb -->
     <div class="flex items-center gap-2">
       <span class="text-label-md font-label-md text-slate-500 dark:text-slate-400">SewaKen</span>
-      <span class="material-symbols-outlined text-slate-400 dark:text-slate-500" style="font-size:16px">chevron_right</span>
+      <span class="material-symbols-outlined text-slate-400 dark:text-slate-500 icon-16">chevron_right</span>
       <span class="text-label-md font-label-md font-semibold text-secondary dark:text-blue-400">{{ pageTitle }}</span>
     </div>
 
@@ -14,8 +14,7 @@
     <div class="flex items-center gap-4">
       <!-- Search (TopNav Quick Filter) -->
       <div v-if="searchPlaceholder" class="relative hidden md:flex items-center">
-        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-blue-400 transition-colors"
-          style="font-size:18px">search</span>
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-blue-400 transition-colors icon-18">search</span>
         <input type="text" :placeholder="searchPlaceholder"
           v-model="searchQuery"
           @keyup.enter="handleSearch"
@@ -26,7 +25,7 @@
                  focus:ring-2 focus:ring-secondary/20 dark:focus:ring-blue-500/30 outline-none w-64 focus:w-80 transition-all shadow-inner dark:shadow-none" />
         <button v-if="searchQuery" @click="clearSearch"
           class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-          <span class="material-symbols-outlined" style="font-size:16px">close</span>
+          <span class="material-symbols-outlined icon-16">close</span>
         </button>
       </div>
 

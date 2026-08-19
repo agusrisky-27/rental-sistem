@@ -11,7 +11,7 @@
           class="bg-secondary text-on-secondary px-5 py-2.5 rounded-lg text-label-md font-bold
                  hover:bg-secondary-container flex items-center gap-2 shadow-sm transition-colors disabled:opacity-50">
           <span v-if="exporting" class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
-          <span v-else class="material-symbols-outlined" style="font-size:18px">download</span>
+          <span v-else class="material-symbols-outlined icon-18">download</span>
           {{ exporting ? 'Mengekspor...' : 'Export Laporan' }}
         </button>
       </div>
@@ -29,7 +29,7 @@
         </div>
         <h3 class="text-headline-lg font-headline-lg font-bold text-slate-900 dark:text-white">{{ stat.value }}</h3>
         <p class="text-label-sm font-label-sm mt-2 flex items-center gap-1" :class="stat.trendColor">
-          <span class="material-symbols-outlined" style="font-size:14px">{{ stat.trendIcon }}</span>
+          <span class="material-symbols-outlined icon-14">{{ stat.trendIcon }}</span>
           {{ stat.trend }}
         </p>
       </div>
@@ -40,11 +40,11 @@
       <div class="flex flex-wrap gap-3 w-full md:w-auto">
         <!-- Search -->
         <div class="relative w-full md:w-80">
-          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary dark:text-blue-400 pointer-events-none transition-colors" style="font-size:20px">search</span>
+          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary dark:text-blue-400 pointer-events-none transition-colors icon-20">search</span>
           <input v-model="search" type="text" placeholder="Cari pelanggan, ID transaksi..."
             class="search-input-field" />
           <button v-if="search" @click="search = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-            <span class="material-symbols-outlined" style="font-size:18px">close</span>
+            <span class="material-symbols-outlined icon-18">close</span>
           </button>
         </div>
 
@@ -60,7 +60,7 @@
 
       <div v-if="search || filterStatus" class="flex justify-end w-full md:w-auto">
         <button @click="search = ''; filterStatus = ''" class="text-xs font-semibold text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center gap-1">
-          <span class="material-symbols-outlined" style="font-size:16px">restart_alt</span>
+          <span class="material-symbols-outlined icon-16">restart_alt</span>
           Reset
         </button>
       </div>
@@ -113,7 +113,7 @@
               </td>
               <td class="py-4 px-6 text-slate-700 dark:text-slate-300">
                 <div class="flex items-center gap-2">
-                  <span class="material-symbols-outlined text-secondary dark:text-blue-400" style="font-size:20px">{{ metodeIcon(p.metode || '') }}</span>
+                  <span class="material-symbols-outlined text-secondary dark:text-blue-400 icon-20">{{ metodeIcon(p.metode || '') }}</span>
                   <span>{{ p.metode }}</span>
                 </div>
               </td>
@@ -127,11 +127,11 @@
                   class="flex justify-end gap-1.5">
                   <button @click="tolak(p)" title="Tolak"
                     class="p-1.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors">
-                    <span class="material-symbols-outlined" style="font-size:20px">close</span>
+                    <span class="material-symbols-outlined icon-20">close</span>
                   </button>
                   <button @click="setujui(p)" title="Setujui"
                     class="p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg transition-colors">
-                    <span class="material-symbols-outlined" style="font-size:20px">check</span>
+                    <span class="material-symbols-outlined icon-20">check</span>
                   </button>
                 </div>
                 <!-- Berhasil: detail -->
@@ -189,7 +189,7 @@
         <button v-if="selected?.status === 'menunggu verifikasi'" @click="konfirmasi"
           class="bg-secondary hover:bg-secondary-container text-on-secondary font-bold py-2.5 px-5
                  rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm">
-          <span class="material-symbols-outlined" style="font-size:18px">check_circle</span>
+          <span class="material-symbols-outlined icon-18">check_circle</span>
           Konfirmasi Pembayaran
         </button>
       </template>

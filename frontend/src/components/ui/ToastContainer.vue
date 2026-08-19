@@ -22,7 +22,7 @@
         <!-- Dismiss -->
         <button @click="toastStore.remove(toast.id)"
           class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-          <span class="material-symbols-outlined" style="font-size:18px">close</span>
+          <span class="material-symbols-outlined icon-18">close</span>
         </button>
       </div>
     </TransitionGroup>
@@ -60,10 +60,3 @@ function iconName(type) {
   }[type] || 'info'
 }
 </script>
-
-<style scoped>
-.toast-enter-active { transition: all 0.3s ease-out; }
-.toast-leave-active { transition: all 0.2s ease-in; }
-.toast-enter-from   { opacity: 0; transform: translateX(100%); }
-.toast-leave-to     { opacity: 0; transform: translateX(100%); }
-</style>

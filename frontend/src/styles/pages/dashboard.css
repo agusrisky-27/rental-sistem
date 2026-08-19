@@ -1,0 +1,8 @@
+/* Dashboard Page Specific Styles */
+.dashboard-stat-card {
+  @apply glass-card rounded-xl p-6 shadow-sm relative overflow-hidden transition-all;
+}
+
+.dashboard-icon-wrapper {
+  @apply w-10 h-10 rounded-full flex items-center justify-center;
+}

@@ -15,7 +15,7 @@
         <form @submit.prevent="saveProfile" class="space-y-4">
           <div class="flex flex-col items-center mb-6">
             <div 
-              class="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-700 border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center cursor-pointer overflow-hidden relative group"
+              class="avatar-uploader-box group"
               @click="$refs.fileInput.click()"
               @dragover.prevent
               @drop.prevent="handleDrop"

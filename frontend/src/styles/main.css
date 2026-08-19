@@ -1,0 +1,29 @@
+/* ==========================================================================
+   SewaKen Main Stylesheet Entry Point
+   Imports all modular external CSS files
+   ========================================================================== */
+
+/* 1. Base Styles (Fonts, Tailwind base/components/utilities, Resets, Scrollbar) */
+@import './base.css';
+
+/* 2. Typography & Icon helpers */
+@import './typography.css';
+
+/* 3. Component Styles (Glass cards, Form fields, Filter panels, Table panels) */
+@import './components.css';
+
+/* 4. Animations & Transitions (Keyframes, Vue transitions) */
+@import './animations.css';
+
+/* 5. Custom Utilities */
+@import './utilities.css';
+
+/* 6. Page-specific Styles */
+@import './pages/login.css';
+@import './pages/dashboard.css';
+@import './pages/kendaraan.css';
+@import './pages/pelanggan.css';
+@import './pages/transaksi.css';
+@import './pages/pembayaran.css';
+@import './pages/pengembalian.css';
+@import './pages/pengaturan.css';

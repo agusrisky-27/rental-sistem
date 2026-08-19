@@ -9,7 +9,7 @@
       <button @click="openTambah"
         class="bg-secondary text-on-secondary font-bold text-label-md px-5 py-2.5
                rounded-lg flex items-center gap-2 shadow-sm hover:bg-secondary-container transition-colors">
-        <span class="material-symbols-outlined" style="font-size:18px">add</span>
+        <span class="material-symbols-outlined icon-18">add</span>
         Tambah Kendaraan
       </button>
     </div>
@@ -19,11 +19,11 @@
       <div class="flex flex-wrap gap-3 w-full md:w-auto">
         <!-- Search Field -->
         <div class="relative w-full md:w-80">
-          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary dark:text-blue-400 pointer-events-none transition-colors" style="font-size:20px">search</span>
+          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary dark:text-blue-400 pointer-events-none transition-colors icon-20">search</span>
           <input v-model="search" type="text" placeholder="Cari nama, nomor plat, tipe..."
             class="search-input-field" />
           <button v-if="search" @click="search = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-            <span class="material-symbols-outlined" style="font-size:18px">close</span>
+            <span class="material-symbols-outlined icon-18">close</span>
           </button>
         </div>
 
@@ -50,7 +50,7 @@
 
       <div v-if="filterTipe || filterStatus || search" class="w-full md:w-auto flex justify-end">
         <button @click="resetFilters" class="text-xs font-semibold text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center gap-1">
-          <span class="material-symbols-outlined" style="font-size:16px">restart_alt</span>
+          <span class="material-symbols-outlined icon-16">restart_alt</span>
           Reset Filter
         </button>
       </div>
@@ -105,11 +105,11 @@
                   <div class="flex items-center justify-end gap-1">
                     <button @click="openEdit(k)" title="Edit"
                       class="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-secondary dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                      <span class="material-symbols-outlined" style="font-size:20px">edit</span>
+                      <span class="material-symbols-outlined icon-20">edit</span>
                     </button>
                     <button @click="openHapus(k)" title="Hapus"
                       class="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors">
-                      <span class="material-symbols-outlined" style="font-size:20px">delete</span>
+                      <span class="material-symbols-outlined icon-20">delete</span>
                     </button>
                   </div>
                 </td>
@@ -127,12 +127,12 @@
         <div class="flex gap-2 items-center">
           <button @click="currentPage > 1 && (currentPage--, fetchKendaraan())" :disabled="currentPage <= 1" 
             class="p-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-            <span class="material-symbols-outlined" style="font-size:18px">chevron_left</span>
+            <span class="material-symbols-outlined icon-18">chevron_left</span>
           </button>
           <span class="px-3 py-1.5 text-label-md font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">{{ currentPage }} / {{ pagination?.last_page || 1 }}</span>
           <button @click="currentPage < pagination?.last_page && (currentPage++, fetchKendaraan())" :disabled="currentPage >= (pagination?.last_page || 1)" 
             class="p-2 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-            <span class="material-symbols-outlined" style="font-size:18px">chevron_right</span>
+            <span class="material-symbols-outlined icon-18">chevron_right</span>
           </button>
         </div>
       </div>
@@ -261,7 +261,7 @@
       </template>
       <div class="flex flex-col items-center text-center py-4">
         <div class="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-950/60 flex items-center justify-center mb-4">
-          <span class="material-symbols-outlined text-rose-600 dark:text-rose-400 fill" style="font-size:32px">delete</span>
+          <span class="material-symbols-outlined text-rose-600 dark:text-rose-400 fill icon-32">delete</span>
         </div>
         <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Hapus Kendaraan?</h2>
         <p class="text-body-md font-body-md text-slate-500 dark:text-slate-400 mb-6">

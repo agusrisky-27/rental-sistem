@@ -9,7 +9,7 @@
       <button @click="exportToExcel" class="bg-secondary text-on-secondary px-5 py-2.5 rounded-lg font-bold text-label-md
                      flex items-center gap-2 shadow-sm hover:bg-secondary-container transition-colors disabled:opacity-50" :disabled="exporting">
         <span v-if="exporting" class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
-        <span v-else class="material-symbols-outlined" style="font-size:18px">download</span>
+        <span v-else class="material-symbols-outlined icon-18">download</span>
         {{ exporting ? 'Mengekspor...' : 'Export Excel' }}
       </button>
     </div>
@@ -19,11 +19,11 @@
       <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
         <!-- Search Field -->
         <div class="relative w-full sm:w-72">
-          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary dark:text-blue-400 pointer-events-none transition-colors" style="font-size:20px">search</span>
+          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary dark:text-blue-400 pointer-events-none transition-colors icon-20">search</span>
           <input v-model="search" type="text" placeholder="Cari ID, pelanggan, mobil..."
             class="search-input-field" />
           <button v-if="search" @click="search = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-            <span class="material-symbols-outlined" style="font-size:18px">close</span>
+            <span class="material-symbols-outlined icon-18">close</span>
           </button>
         </div>
 
@@ -49,7 +49,7 @@
 
       <div v-if="filterMulai || filterAkhir || filterStatus || search" class="flex justify-end">
         <button @click="resetFilters" class="text-xs font-semibold text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center gap-1">
-          <span class="material-symbols-outlined" style="font-size:16px">restart_alt</span>
+          <span class="material-symbols-outlined icon-16">restart_alt</span>
           Reset Filter
         </button>
       </div>
@@ -95,7 +95,7 @@
               <td class="py-4 px-6 text-right">
                 <button @click="openDetail(t)" title="Lihat Detail"
                   class="text-secondary dark:text-blue-400 hover:text-secondary-container p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                  <span class="material-symbols-outlined" style="font-size:20px">visibility</span>
+                  <span class="material-symbols-outlined icon-20">visibility</span>
                 </button>
               </td>
             </tr>
@@ -156,7 +156,7 @@
               <p class="text-label-sm font-label-sm text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Informasi Pelanggan</p>
               <p class="text-body-lg font-semibold text-slate-900 dark:text-white truncate">{{ selected.pelanggan?.nama }}</p>
               <p class="text-label-md text-slate-500 dark:text-slate-400 flex items-center gap-1 truncate">
-                <span class="material-symbols-outlined" style="font-size:14px">mail</span>
+                <span class="material-symbols-outlined icon-14">mail</span>
                 {{ selected.pelanggan?.email }}
               </p>
             </div>
@@ -189,19 +189,19 @@
         <!-- Stepper status -->
         <div>
           <h3 class="text-body-md font-bold text-slate-900 dark:text-white mb-6">Status Pemesanan</h3>
-          <div class="relative flex items-center justify-between w-full pb-4">
-            <div class="absolute top-4 left-4 right-4 h-0.5 bg-slate-200 dark:bg-slate-700 -z-10"></div>
-            <div class="absolute top-4 left-4 h-0.5 bg-secondary dark:bg-blue-500 -z-10 transition-all"
+          <div class="stepper-container">
+            <div class="stepper-bg-line"></div>
+            <div class="stepper-active-line"
               :style="{ width: stepProgress }"></div>
             <div v-for="(step, i) in steps" :key="step"
               class="flex flex-col items-center gap-2 relative z-10">
-              <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-sm text-xs font-bold transition-all"
+              <div class="stepper-step-node"
                 :class="i < currentStep
                   ? 'bg-secondary dark:bg-blue-600 text-white'
                   : i === currentStep
                     ? 'border-2 border-secondary dark:border-blue-400 bg-white dark:bg-slate-800 text-secondary dark:text-blue-400'
                     : 'bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-500'">
-                <span v-if="i < currentStep" class="material-symbols-outlined" style="font-size:18px">check</span>
+                <span v-if="i < currentStep" class="material-symbols-outlined icon-18">check</span>
                 <div v-else-if="i === currentStep" class="w-2.5 h-2.5 rounded-full bg-secondary dark:bg-blue-400"></div>
                 <span v-else>{{ i + 1 }}</span>
               </div>
@@ -223,7 +223,7 @@
         <button v-if="selected?.status === 'aktif'" @click="tandaiKembali"
           class="px-5 py-2.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700
                  text-label-md font-bold shadow-sm flex items-center gap-2 transition-colors">
-          <span class="material-symbols-outlined" style="font-size:18px">task_alt</span>
+          <span class="material-symbols-outlined icon-18">task_alt</span>
           Tandai Dikembalikan
         </button>
         <template v-if="selected?.status === 'menunggu'">

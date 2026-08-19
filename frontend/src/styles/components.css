@@ -1,0 +1,56 @@
+/* Glassmorphism Cards */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+html.dark .glass-card {
+  background: rgba(30, 41, 59, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+}
+
+@layer components {
+  /* High-contrast, clean Form Input with distinct Dark Mode depth */
+  .form-input {
+    @apply w-full bg-white dark:bg-slate-900 
+           border border-slate-200 dark:border-slate-700 
+           rounded-lg px-4 py-2.5 
+           text-body-md font-body-md text-slate-800 dark:text-slate-100 
+           placeholder:text-slate-400 dark:placeholder:text-slate-500
+           focus:outline-none focus:border-secondary dark:focus:border-blue-500 
+           focus:ring-2 focus:ring-secondary/20 dark:focus:ring-blue-500/30 
+           transition-all;
+  }
+
+  /* Search Input with distinct inset background and high contrast */
+  .search-input-field {
+    @apply w-full pl-10 pr-9 py-2.5 
+           bg-slate-50 dark:bg-slate-900/90 
+           border border-slate-200 dark:border-slate-700/80 
+           rounded-lg text-body-md font-body-md 
+           text-slate-800 dark:text-slate-100 
+           placeholder:text-slate-400 dark:placeholder:text-slate-400
+           focus:outline-none focus:bg-white dark:focus:bg-slate-900 
+           focus:border-secondary dark:focus:border-blue-500 
+           focus:ring-2 focus:ring-secondary/20 dark:focus:ring-blue-500/25 
+           shadow-inner dark:shadow-none transition-all;
+  }
+
+  /* Filter Container Card with clear elevation */
+  .filter-panel {
+    @apply bg-white dark:bg-slate-800/90 
+           border border-slate-200 dark:border-slate-700/80 
+           rounded-xl p-4 shadow-sm backdrop-blur-sm transition-colors;
+  }
+
+  /* Table Card container */
+  .table-panel {
+    @apply bg-white dark:bg-slate-800 
+           border border-slate-200 dark:border-slate-700/80 
+           rounded-xl shadow-sm overflow-hidden transition-colors;
+  }
+}

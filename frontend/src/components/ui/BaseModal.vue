@@ -16,7 +16,7 @@
             <button @click="$emit('update:modelValue', false)"
               class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200
                      hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-colors">
-              <span class="material-symbols-outlined" style="font-size:20px">close</span>
+              <span class="material-symbols-outlined icon-20">close</span>
             </button>
           </div>
 
@@ -44,8 +44,3 @@ defineProps({
 })
 defineEmits(['update:modelValue'])
 </script>
-
-<style scoped>
-.modal-enter-active, .modal-leave-active { transition: opacity 0.2s ease; }
-.modal-enter-from,  .modal-leave-to      { opacity: 0; }
-</style>

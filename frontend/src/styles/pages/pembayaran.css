@@ -1,0 +1,4 @@
+/* Pembayaran Page Specific Styles */
+.pembayaran-stat-card {
+  @apply glass-card rounded-xl p-6 relative overflow-hidden transition-all shadow-sm;
+}

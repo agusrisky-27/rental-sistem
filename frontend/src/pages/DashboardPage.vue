@@ -14,7 +14,7 @@
         class="flex items-center gap-2 bg-secondary text-on-secondary font-bold
                text-label-md py-2.5 px-5 rounded-lg hover:bg-secondary-container
                transition-colors shadow-sm">
-        <span class="material-symbols-outlined" style="font-size:18px">add</span>
+        <span class="material-symbols-outlined icon-18">add</span>
         Transaksi Baru
       </RouterLink>
     </div>
@@ -34,7 +34,7 @@
         </h3>
         <p class="text-label-sm font-label-sm mt-2 flex items-center gap-1 font-semibold"
            :class="(stats?.trend_pendapatan ?? 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
-          <span class="material-symbols-outlined" style="font-size:14px">{{ (stats?.trend_pendapatan ?? 0) >= 0 ? 'trending_up' : 'trending_down' }}</span>
+          <span class="material-symbols-outlined icon-14">{{ (stats?.trend_pendapatan ?? 0) >= 0 ? 'trending_up' : 'trending_down' }}</span>
           {{ stats?.trend_pendapatan !== undefined ? ((stats.trend_pendapatan > 0 ? '+' : '') + stats.trend_pendapatan + '% dari bulan lalu') : 'Stabil dari bulan lalu' }}
         </p>
       </div>
@@ -70,7 +70,7 @@
         </h3>
         <p class="text-label-sm font-label-sm mt-2 flex items-center gap-1 font-semibold"
            :class="(stats?.trend_pelanggan ?? 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
-          <span class="material-symbols-outlined" style="font-size:14px">{{ (stats?.trend_pelanggan ?? 0) >= 0 ? 'trending_up' : 'trending_down' }}</span>
+          <span class="material-symbols-outlined icon-14">{{ (stats?.trend_pelanggan ?? 0) >= 0 ? 'trending_up' : 'trending_down' }}</span>
           {{ stats?.trend_pelanggan !== undefined ? ((stats.trend_pelanggan > 0 ? '+' : '') + stats.trend_pelanggan + '% minggu ini') : 'Stabil minggu ini' }}
         </p>
       </div>
@@ -106,7 +106,7 @@
         <RouterLink to="/transaksi"
           class="text-secondary dark:text-blue-400 text-sm font-semibold hover:underline flex items-center gap-1">
           <span>Lihat Semua</span>
-          <span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span>
+          <span class="material-symbols-outlined icon-16">arrow_forward</span>
         </RouterLink>
       </div>
       <div class="overflow-x-auto">
@@ -137,7 +137,7 @@
               class="hover:bg-slate-50/80 dark:hover:bg-slate-750/50 transition-colors">
               <td class="p-4 flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700/60 flex items-center justify-center text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                  <span class="material-symbols-outlined" style="font-size:20px">directions_car</span>
+                  <span class="material-symbols-outlined icon-20">directions_car</span>
                 </div>
                 <span class="font-semibold text-slate-900 dark:text-white">{{ item.kendaraan?.nama || '-' }}</span>
               </td>
@@ -148,7 +148,7 @@
               </td>
               <td class="p-4 text-right">
                 <RouterLink to="/transaksi" class="p-1.5 rounded-lg text-slate-400 hover:text-secondary dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 inline-flex transition-colors">
-                  <span class="material-symbols-outlined" style="font-size:18px">visibility</span>
+                  <span class="material-symbols-outlined icon-18">visibility</span>
                 </RouterLink>
               </td>
             </tr>

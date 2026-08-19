@@ -1,0 +1,52 @@
+/* Material Symbols configuration */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  line-height: 1;
+  display: inline-block;
+}
+
+.material-symbols-outlined.fill {
+  font-variation-settings: 'FILL' 1;
+}
+
+/* Icon size helpers to eliminate inline font-size styles */
+.icon-14 {
+  font-size: 14px !important;
+}
+
+.icon-16 {
+  font-size: 16px !important;
+}
+
+.icon-18 {
+  font-size: 18px !important;
+}
+
+.icon-20 {
+  font-size: 20px !important;
+}
+
+.icon-24 {
+  font-size: 24px !important;
+}
+
+.icon-32 {
+  font-size: 32px !important;
+}
+
+.icon-sm {
+  font-size: 16px !important;
+}
+
+.icon-md {
+  font-size: 20px !important;
+}
+
+.icon-lg {
+  font-size: 24px !important;
+}
+
+.icon-xl {
+  font-size: 32px !important;
+}
