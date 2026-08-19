@@ -2,7 +2,7 @@
   <div class="fixed top-20 right-8 z-50 flex flex-col gap-3 pointer-events-none">
     <TransitionGroup name="toast">
       <div v-for="toast in toastStore.toasts" :key="toast.id"
-        class="w-84 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700
+        class="w-80 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700
                flex items-start gap-3 p-4 pointer-events-auto animate-slide-in-right transition-colors"
         :class="borderClass(toast.type)">
 

@@ -405,7 +405,7 @@ async function exportToExcel() {
         status: filterStatus.value,
         tanggal_mulai: filterMulai.value,
         tanggal_akhir: filterAkhir.value,
-        limit: 1000
+        per_page: 1000
       }
     })
     

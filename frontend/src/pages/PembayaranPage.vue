@@ -326,6 +326,7 @@ async function setujui(p) {
     await api.patch(`/pembayaran/${p.id}/verifikasi`)
     toast.success('Berhasil', `Pembayaran #${p.id} dikonfirmasi.`)
     fetchPembayaran()
+    fetchStats()
   } catch (error) {
     toast.error('Gagal', 'Gagal mengkonfirmasi pembayaran')
   }
@@ -336,6 +337,7 @@ async function tolak(p) {
     await api.patch(`/pembayaran/${p.id}`, { status: 'ditolak' })
     toast.success('Ditolak', `Pembayaran #${p.id} ditolak.`)
     fetchPembayaran()
+    fetchStats()
   } catch (error) {
     toast.error('Gagal', 'Gagal menolak pembayaran')
   }
@@ -354,7 +356,7 @@ async function exportLaporan() {
     const res = await api.get('/pembayaran', {
       params: {
         status: filterStatus.value,
-        limit: 1000
+        per_page: 1000
       }
     })
     const dataToExport = res.data.data || res.data

@@ -161,7 +161,6 @@ const saveProfile = async () => {
   loadingProfile.value = true
   try {
     const formData = new FormData()
-    formData.append('_method', 'PATCH')
     formData.append('name', profileForm.name)
     formData.append('email', profileForm.email)
     if (profileForm.telepon) formData.append('telepon', profileForm.telepon)
@@ -171,10 +170,12 @@ const saveProfile = async () => {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     
-    auth.user.name = profileForm.name
-    auth.user.email = profileForm.email
-    auth.user.telepon = profileForm.telepon
-    if (profileForm.preview) auth.user.foto_profil = profileForm.preview
+    auth.updateUser({
+      name: profileForm.name,
+      email: profileForm.email,
+      telepon: profileForm.telepon,
+      ...(profileForm.preview ? { foto_profil: profileForm.preview } : {})
+    })
     
     toast.success('Berhasil', 'Profil berhasil diperbarui.')
   } catch (error) {

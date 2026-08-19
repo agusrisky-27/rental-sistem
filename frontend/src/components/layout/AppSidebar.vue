@@ -66,8 +66,8 @@ const mainNav = [
   { to: '/pengembalian', icon: 'assignment_return', label: 'Pengembalian' },
 ]
 
-function handleLogout() {
-  auth.logout()
+async function handleLogout() {
+  await auth.logout()
   router.push('/login')
 }
 </script>

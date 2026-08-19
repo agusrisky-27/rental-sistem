@@ -415,7 +415,7 @@ async function exportPelanggan() {
       params: {
         search: search.value,
         level: filterLevel.value,
-        limit: 1000
+        per_page: 1000
       }
     })
     const dataToExport = res.data.data || res.data

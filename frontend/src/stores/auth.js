@@ -16,12 +16,23 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('user', JSON.stringify(user.value))
   }
 
-  function logout() {
-    token.value = null
-    user.value  = null
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+  async function logout() {
+    try {
+      await api.post('/auth/logout')
+    } catch (e) {
+      // Ignore errors (token might already be invalid)
+    } finally {
+      token.value = null
+      user.value  = null
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+    }
   }
 
-  return { token, user, isLoggedIn, login, logout }
+  function updateUser(userData) {
+    user.value = { ...user.value, ...userData }
+    localStorage.setItem('user', JSON.stringify(user.value))
+  }
+
+  return { token, user, isLoggedIn, login, logout, updateUser }
 })
