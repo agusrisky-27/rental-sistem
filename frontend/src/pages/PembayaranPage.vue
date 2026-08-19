@@ -7,10 +7,12 @@
         <p class="text-body-md font-body-md text-slate-500 dark:text-slate-400 mt-1">Verifikasi dan kelola transaksi pembayaran pelanggan.</p>
       </div>
       <div class="flex gap-3">
-        <button class="bg-secondary text-on-secondary px-5 py-2.5 rounded-lg text-label-md font-bold
-                       hover:bg-secondary-container flex items-center gap-2 shadow-sm transition-colors">
-          <span class="material-symbols-outlined" style="font-size:18px">download</span>
-          Export Laporan
+        <button @click="exportLaporan" :disabled="exporting"
+          class="bg-secondary text-on-secondary px-5 py-2.5 rounded-lg text-label-md font-bold
+                 hover:bg-secondary-container flex items-center gap-2 shadow-sm transition-colors disabled:opacity-50">
+          <span v-if="exporting" class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+          <span v-else class="material-symbols-outlined" style="font-size:18px">download</span>
+          {{ exporting ? 'Mengekspor...' : 'Export Laporan' }}
         </button>
       </div>
     </div>
@@ -208,15 +210,53 @@ const filterStatus = ref('')
 const showDetail   = ref(false)
 const selected     = ref(null)
 const loading      = ref(false)
+const exporting    = ref(false)
 const currentPage  = ref(1)
 const pagination   = ref(null)
 const pembayaran   = ref([])
+const rawStats     = ref(null)
 
-const stats = [
-  { label:'Menunggu Verifikasi', value:'12', icon:'pending_actions', iconBg:'bg-amber-100 dark:bg-amber-950/60',     iconColor:'text-amber-600 dark:text-amber-400',   trend:'+3 dari kemarin',       trendIcon:'arrow_upward', trendColor:'text-amber-500' },
-  { label:'Berhasil (Hari ini)', value:'48', icon:'check_circle',    iconBg:'bg-emerald-100 dark:bg-emerald-950/60', iconColor:'text-emerald-600 dark:text-emerald-400', trend:'+15% dari rata-rata',   trendIcon:'arrow_upward', trendColor:'text-emerald-500'  },
-  { label:'Total Pending',       value:'Rp 15.450.000', icon:'payments', iconBg:'bg-blue-100 dark:bg-blue-950/60', iconColor:'text-secondary dark:text-blue-400', trend:'Menunggu konfirmasi', trendIcon:'info',         trendColor:'text-slate-400' },
-]
+const stats = computed(() => [
+  { 
+    label: 'Menunggu Verifikasi', 
+    value: rawStats.value ? String(rawStats.value.menunggu_verifikasi) : '0', 
+    icon: 'pending_actions', 
+    iconBg: 'bg-amber-100 dark:bg-amber-950/60',     
+    iconColor: 'text-amber-600 dark:text-amber-400',   
+    trend: rawStats.value?.menunggu_verifikasi > 0 ? `${rawStats.value.menunggu_verifikasi} perlu tindakan` : 'Semua terverifikasi',       
+    trendIcon: 'info', 
+    trendColor: 'text-amber-500' 
+  },
+  { 
+    label: 'Berhasil (Hari ini)', 
+    value: rawStats.value ? String(rawStats.value.berhasil_hari_ini) : '0', 
+    icon: 'check_circle',    
+    iconBg: 'bg-emerald-100 dark:bg-emerald-950/60', 
+    iconColor: 'text-emerald-600 dark:text-emerald-400', 
+    trend: 'Transaksi hari ini',   
+    trendIcon: 'today', 
+    trendColor: 'text-emerald-500'  
+  },
+  { 
+    label: 'Total Pending',       
+    value: rawStats.value ? formatRupiah(rawStats.value.total_pending) : 'Rp 0', 
+    icon: 'payments', 
+    iconBg: 'bg-blue-100 dark:bg-blue-950/60', 
+    iconColor: 'text-secondary dark:text-blue-400', 
+    trend: 'Menunggu konfirmasi', 
+    trendIcon: 'payments',         
+    trendColor: 'text-slate-400' 
+  },
+])
+
+const fetchStats = async () => {
+  try {
+    const { data } = await api.get('/pembayaran-stats')
+    rawStats.value = data
+  } catch (error) {
+    console.error('Gagal memuat statistik pembayaran:', error)
+  }
+}
 
 const fetchPembayaran = async () => {
   loading.value = true
@@ -238,6 +278,7 @@ const fetchPembayaran = async () => {
 
 onMounted(() => {
   fetchPembayaran()
+  fetchStats()
 })
 
 watch(filterStatus, () => {
@@ -304,6 +345,44 @@ function konfirmasi() {
   if (selected.value) {
     setujui(selected.value)
     showDetail.value = false
+  }
+}
+
+async function exportLaporan() {
+  exporting.value = true
+  try {
+    const res = await api.get('/pembayaran', {
+      params: {
+        status: filterStatus.value,
+        limit: 1000
+      }
+    })
+    const dataToExport = res.data.data || res.data
+    const headers = ['ID Pembayaran', 'ID Transaksi', 'Pelanggan', 'Metode', 'Jumlah', 'Status', 'Tanggal Bayar']
+    const rows = dataToExport.map(p => [
+      p.id,
+      p.transaksi_id,
+      `"${p.transaksi?.pelanggan?.nama || '-'}"`,
+      `"${p.metode || '-'}"`,
+      p.jumlah,
+      p.status,
+      p.tanggal_bayar || '-'
+    ])
+    const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `laporan_pembayaran_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    toast.success('Berhasil', 'Laporan pembayaran berhasil diekspor.')
+  } catch (error) {
+    toast.error('Gagal', 'Gagal mengekspor laporan pembayaran.')
+  } finally {
+    exporting.value = false
   }
 }
 </script>

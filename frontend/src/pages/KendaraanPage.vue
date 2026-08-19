@@ -87,7 +87,7 @@
                 class="hover:bg-slate-50/80 dark:hover:bg-slate-750/50 transition-colors group">
                 <td class="py-4 px-6 flex items-center gap-4">
                   <div class="w-14 h-11 rounded-lg bg-slate-100 dark:bg-slate-700/60 overflow-hidden flex items-center justify-center shrink-0 border border-slate-200/50 dark:border-slate-700">
-                    <img v-if="k.foto" :src="k.foto" :alt="k.nama" class="w-full h-full object-cover" />
+                    <img v-if="k.foto_url" :src="k.foto_url" :alt="k.nama" class="w-full h-full object-cover" />
                     <span v-else class="material-symbols-outlined text-slate-400 dark:text-slate-500 text-2xl">directions_car</span>
                   </div>
                   <div>
@@ -382,7 +382,10 @@ function openTambah() {
 
 function openEdit(k) {
   isEdit.value   = true
-  formData.value = { ...k }
+  // foto disimpan sebagai path string di backend, bukan File — jangan dikirim ulang
+  // kecuali admin memilih foto baru. Pratinjau memakai foto_url yang sudah lengkap.
+  const { foto, foto_url, ...rest } = k
+  formData.value = { ...rest, foto: null, preview: foto_url || null }
   showForm.value = true
 }
 
@@ -399,7 +402,7 @@ function validateForm() {
   validateRequired('tipe', formData.value.tipe)
   
   if (validateRequired('plat', formData.value.plat)) {
-    validatePattern('plat', formData.value.plat, /^[A-Z]{1,2}\s\d{1,4}\s[A-Z]{1,3}$/i, 'Format plat: B 1234 ABC')
+    validatePattern('plat', formData.value.plat, /^[A-Z]{1,2}\s?\d{1,4}\s?[A-Z]{0,3}$/i, 'Format plat: B 1234 ABC')
   }
   
   validateMinMax('kapasitas', formData.value.kapasitas, 1, 50)

@@ -21,6 +21,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Dashboard
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 
+    // Pembayaran stats (harus didaftarkan sebelum apiResource agar tidak bentrok dengan /pembayaran/{pembayaran})
+    Route::get('/pembayaran-stats', [PembayaranController::class, 'stats']);
+
     // Resources
     Route::apiResource('kendaraan',    KendaraanController::class);
     Route::apiResource('pelanggan',    PelangganController::class);

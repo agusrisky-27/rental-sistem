@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\Kendaraan;
 use App\Models\Pelanggan;
+use App\Models\Setting;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -20,10 +21,15 @@ class DatabaseSeeder extends Seeder
             'role'     => 'admin',
         ]);
 
+        // Pengaturan aplikasi default
+        Setting::updateOrCreate(['key' => 'app_name'], ['value' => 'SiwaKen']);
+        Setting::updateOrCreate(['key' => 'app_description'], ['value' => 'Sistem Sewa Kendaraan']);
+        Setting::updateOrCreate(['key' => 'app_logo'], ['value' => '']);
+
         // Sample kendaraan
         $kendaraan = [
             ['nama'=>'Toyota Fortuner',     'tipe'=>'SUV',   'plat'=>'B 1234 XYZ', 'kapasitas'=>7, 'harga'=>1500000, 'tahun'=>2023, 'warna'=>'Putih',  'status'=>'tersedia'],
-            ['nama'=>'Honda Camry',          'tipe'=>'Sedan', 'plat'=>'D 5678 ABC', 'kapasitas'=>5, 'harga'=>2000000, 'tahun'=>2022, 'warna'=>'Hitam',  'status'=>'disewa'],
+            ['nama'=>'Toyota Camry',         'tipe'=>'Sedan', 'plat'=>'D 5678 ABC', 'kapasitas'=>5, 'harga'=>2000000, 'tahun'=>2022, 'warna'=>'Hitam',  'status'=>'disewa'],
             ['nama'=>'Toyota Innova Zenix',  'tipe'=>'MPV',   'plat'=>'L 9012 DEF', 'kapasitas'=>7, 'harga'=>1200000, 'tahun'=>2023, 'warna'=>'Silver', 'status'=>'maintenance'],
             ['nama'=>'Honda Brio',           'tipe'=>'Hatchback', 'plat'=>'B 4321 ZYX', 'kapasitas'=>5, 'harga'=>600000, 'tahun'=>2022, 'warna'=>'Merah','status'=>'tersedia'],
             ['nama'=>'Mitsubishi Xpander',   'tipe'=>'MPV',   'plat'=>'F 1111 AAA', 'kapasitas'=>7, 'harga'=>900000, 'tahun'=>2021, 'warna'=>'Putih',  'status'=>'tersedia'],

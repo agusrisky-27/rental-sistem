@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Pembayaran;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class PembayaranController extends Controller
 {
@@ -13,6 +14,17 @@ class PembayaranController extends Controller
         $query = Pembayaran::with(['transaksi.pelanggan', 'transaksi.kendaraan'])->latest();
         if ($request->status) $query->where('status', $request->status);
         return response()->json($query->paginate(10));
+    }
+
+    public function stats()
+    {
+        $today = Carbon::today();
+
+        return response()->json([
+            'menunggu_verifikasi' => Pembayaran::where('status', 'menunggu verifikasi')->count(),
+            'berhasil_hari_ini'   => Pembayaran::where('status', 'berhasil')->whereDate('tanggal_bayar', $today)->count(),
+            'total_pending'       => Pembayaran::where('status', 'menunggu verifikasi')->sum('jumlah'),
+        ]);
     }
 
     public function store(Request $request)

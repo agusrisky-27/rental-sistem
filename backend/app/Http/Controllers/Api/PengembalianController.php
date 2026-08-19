@@ -20,7 +20,7 @@ class PengembalianController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'transaksi_id'      => 'required|exists:transaksi,id',
+            'transaksi_id'      => 'required|exists:transaksi,id|unique:pengembalian,transaksi_id',
             'tanggal_kembali'   => 'required|date',
             'kondisi_kendaraan' => 'nullable|string',
         ]);

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -81,7 +82,7 @@ class AuthController extends Controller
 
         if ($request->hasFile('foto_profil')) {
             $path = $request->file('foto_profil')->store('profiles', 'public');
-            $user->foto_profil = '/storage/' . $path;
+            $user->foto_profil = url(Storage::url($path));
         }
 
         $user->save();

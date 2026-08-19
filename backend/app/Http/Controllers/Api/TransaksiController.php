@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Transaksi;
 use App\Models\Kendaraan;
+use App\Models\Pengembalian;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -16,7 +17,17 @@ class TransaksiController extends Controller
 
         if ($request->status)        $query->where('status', $request->status);
         if ($request->tanggal_mulai) $query->whereDate('tanggal_mulai', '>=', $request->tanggal_mulai);
-        if ($request->tanggal_akhir) $query->whereDate('tanggal_mulai', '<=', $request->tanggal_akhir);
+        if ($request->tanggal_akhir) $query->whereDate('tanggal_akhir', '<=', $request->tanggal_akhir);
+
+        if ($request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                  ->orWhereHas('pelanggan', fn ($p) => $p->where('nama', 'like', "%{$search}%"))
+                  ->orWhereHas('kendaraan', fn ($k) => $k->where('nama', 'like', "%{$search}%")
+                                                          ->orWhere('plat', 'like', "%{$search}%"));
+            });
+        }
 
         return response()->json($query->paginate(10));
     }
@@ -52,7 +63,14 @@ class TransaksiController extends Controller
 
     public function update(Request $request, Transaksi $transaksi)
     {
-        $transaksi->update($request->only(['status']));
+        $data = $request->only(['status']);
+
+        // Jika transaksi dibatalkan/ditolak, kembalikan status kendaraan menjadi tersedia
+        if (($data['status'] ?? null) === 'dibatalkan' && $transaksi->status !== 'dibatalkan') {
+            $transaksi->kendaraan->update(['status' => 'tersedia']);
+        }
+
+        $transaksi->update($data);
         return response()->json($transaksi);
     }
 
@@ -70,8 +88,24 @@ class TransaksiController extends Controller
 
     public function selesai(Transaksi $transaksi)
     {
+        // Catat pengembalian jika belum ada, sekaligus hitung denda keterlambatan
+        if (! $transaksi->pengembalian) {
+            $rencana = Carbon::parse($transaksi->tanggal_akhir);
+            $aktual  = Carbon::now();
+            $telat   = $aktual->gt($rencana) ? $aktual->diffInDays($rencana) : 0;
+            $denda   = $telat > 0 ? ($transaksi->kendaraan->harga * $telat) : 0;
+
+            Pengembalian::create([
+                'transaksi_id'      => $transaksi->id,
+                'tanggal_kembali'   => $aktual->toDateString(),
+                'kondisi_kendaraan' => null,
+                'denda'             => $denda,
+                'status'            => 'selesai',
+            ]);
+        }
+
         $transaksi->update(['status' => 'selesai']);
         $transaksi->kendaraan->update(['status' => 'tersedia']);
-        return response()->json($transaksi);
+        return response()->json($transaksi->load('pengembalian'));
     }
 }

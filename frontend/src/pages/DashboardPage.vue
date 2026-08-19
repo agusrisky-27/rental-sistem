@@ -32,9 +32,10 @@
         <h3 class="text-headline-lg font-headline-lg font-bold text-slate-900 dark:text-white">
           {{ loading ? '...' : formatRupiah(stats?.total_pendapatan) }}
         </h3>
-        <p class="text-label-sm font-label-sm mt-2 flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
-          <span class="material-symbols-outlined" style="font-size:14px">trending_up</span>
-          +15% dari bulan lalu
+        <p class="text-label-sm font-label-sm mt-2 flex items-center gap-1 font-semibold"
+           :class="(stats?.trend_pendapatan ?? 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
+          <span class="material-symbols-outlined" style="font-size:14px">{{ (stats?.trend_pendapatan ?? 0) >= 0 ? 'trending_up' : 'trending_down' }}</span>
+          {{ stats?.trend_pendapatan !== undefined ? ((stats.trend_pendapatan > 0 ? '+' : '') + stats.trend_pendapatan + '% dari bulan lalu') : 'Stabil dari bulan lalu' }}
         </p>
       </div>
 
@@ -65,11 +66,12 @@
           </div>
         </div>
         <h3 class="text-headline-lg font-headline-lg font-bold text-slate-900 dark:text-white">
-          {{ loading ? '...' : (stats?.pengguna_baru || stats?.total_pelanggan || 0) }}
+          {{ loading ? '...' : (stats?.pelanggan_aktif ?? stats?.pengguna_baru ?? stats?.total_pelanggan ?? 0) }}
         </h3>
-        <p class="text-label-sm font-label-sm mt-2 flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
-          <span class="material-symbols-outlined" style="font-size:14px">trending_up</span>
-          +8% minggu ini
+        <p class="text-label-sm font-label-sm mt-2 flex items-center gap-1 font-semibold"
+           :class="(stats?.trend_pelanggan ?? 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
+          <span class="material-symbols-outlined" style="font-size:14px">{{ (stats?.trend_pelanggan ?? 0) >= 0 ? 'trending_up' : 'trending_down' }}</span>
+          {{ stats?.trend_pelanggan !== undefined ? ((stats.trend_pelanggan > 0 ? '+' : '') + stats.trend_pelanggan + '% minggu ini') : 'Stabil minggu ini' }}
         </p>
       </div>
 

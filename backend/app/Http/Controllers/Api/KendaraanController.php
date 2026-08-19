@@ -14,7 +14,12 @@ class KendaraanController extends Controller
         $query = Kendaraan::query();
 
         if ($request->search) {
-            $query->where('nama', 'like', "%{$request->search}%");
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('plat', 'like', "%{$search}%")
+                  ->orWhere('tipe', 'like', "%{$search}%");
+            });
         }
         if ($request->tipe) {
             $query->where('tipe', $request->tipe);
@@ -37,7 +42,7 @@ class KendaraanController extends Controller
             'tahun'     => 'required|integer',
             'warna'     => 'nullable|string',
             'deskripsi' => 'nullable|string',
-            'status'    => 'required|in:tersedia,maintenance',
+            'status'    => 'required|in:tersedia,disewa,maintenance',
             'foto'      => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
         ]);
 
