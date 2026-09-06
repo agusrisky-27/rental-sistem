@@ -288,7 +288,6 @@
 import { ref, onMounted, watch } from 'vue'
 import api from '@/services/api'
 import { useToastStore } from '@/stores/toast'
-import { useSearchStore } from '@/stores/search'
 import { useFormValidation } from '@/composables/useFormValidation'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import BaseModal   from '@/components/ui/BaseModal.vue'
@@ -296,7 +295,6 @@ import FormField   from '@/components/ui/FormField.vue'
 import SkeletonLoader from '@/components/ui/SkeletonLoader.vue'
 
 const toast = useToastStore()
-const searchStore = useSearchStore()
 const { errors, validateRequired, validateMinMax, validatePattern, clearErrors, hasErrors } = useFormValidation()
 
 // ── State ──
@@ -339,7 +337,6 @@ function resetFilters() {
   search.value = ''
   filterTipe.value = ''
   filterStatus.value = ''
-  searchStore.setQuery('')
 }
 
 // ── Actions ──
@@ -348,7 +345,7 @@ async function fetchKendaraan() {
   try {
     const { data } = await api.get('/kendaraan', { 
       params: { 
-        search: search.value || searchStore.query, 
+        search: search.value, 
         tipe: filterTipe.value, 
         status: filterStatus.value, 
         page: currentPage.value 
@@ -366,7 +363,7 @@ async function fetchKendaraan() {
 onMounted(fetchKendaraan)
 
 let searchTimeout
-watch([search, filterTipe, filterStatus, () => searchStore.query], () => {
+watch([search, filterTipe, filterStatus], () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
     currentPage.value = 1

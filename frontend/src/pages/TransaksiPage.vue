@@ -246,13 +246,11 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useToastStore } from '@/stores/toast'
-import { useSearchStore } from '@/stores/search'
 import api from '@/services/api'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
 import BaseModal   from '@/components/ui/BaseModal.vue'
 
 const toast = useToastStore()
-const searchStore = useSearchStore()
 
 const search       = ref('')
 const filterMulai  = ref('')
@@ -279,11 +277,10 @@ function resetFilters() {
   filterMulai.value = ''
   filterAkhir.value = ''
   filterStatus.value = ''
-  searchStore.setQuery('')
 }
 
 const filteredTransaksi = computed(() => {
-  const q = (search.value || searchStore.query || '').toLowerCase().trim()
+  const q = (search.value || '').toLowerCase().trim()
   if (!q) return transaksi.value
   return transaksi.value.filter(t => 
     String(t.id).toLowerCase().includes(q) ||
