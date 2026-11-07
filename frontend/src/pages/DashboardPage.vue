@@ -10,7 +10,7 @@
           Berikut ringkasan kinerja, ketersediaan armada, dan aktivitas transaksi terbaru Anda.
         </p>
       </div>
-      <RouterLink to="/transaksi"
+      <RouterLink to="/admin/transaksi"
         class="flex items-center gap-2 bg-secondary text-on-secondary font-bold
                text-label-md py-2.5 px-5 rounded-lg hover:bg-secondary-container
                transition-colors shadow-sm">
@@ -88,7 +88,7 @@
             Kelola pengembalian kendaraan hari ini.
           </p>
         </div>
-        <RouterLink to="/pengembalian"
+        <RouterLink to="/admin/pengembalian"
           class="w-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-bold text-label-md py-2.5
                  rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-center block border border-slate-200 dark:border-slate-700">
           Lihat Pengembalian
@@ -103,7 +103,7 @@
           <h2 class="text-headline-md font-headline-md font-bold text-slate-900 dark:text-white">Aktivitas Terbaru</h2>
           <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Transaksi dan pemesanan rental yang baru masuk</p>
         </div>
-        <RouterLink to="/transaksi"
+        <RouterLink to="/admin/transaksi"
           class="text-secondary dark:text-blue-400 text-sm font-semibold hover:underline flex items-center gap-1">
           <span>Lihat Semua</span>
           <span class="material-symbols-outlined icon-16">arrow_forward</span>
@@ -147,7 +147,7 @@
                 <StatusBadge :status="item.status" />
               </td>
               <td class="p-4 text-right">
-                <RouterLink to="/transaksi" class="p-1.5 rounded-lg text-slate-400 hover:text-secondary dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 inline-flex transition-colors">
+                <RouterLink to="/admin/transaksi" class="p-1.5 rounded-lg text-slate-400 hover:text-secondary dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 inline-flex transition-colors">
                   <span class="material-symbols-outlined icon-18">visibility</span>
                 </RouterLink>
               </td>

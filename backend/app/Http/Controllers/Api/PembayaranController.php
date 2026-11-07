@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pembayaran;
+use App\Models\Transaksi;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -13,6 +14,7 @@ class PembayaranController extends Controller
     {
         $query = Pembayaran::with(['transaksi.pelanggan', 'transaksi.kendaraan'])->latest();
         if ($request->status) $query->where('status', $request->status);
+        if ($request->jenis)  $query->where('jenis', $request->jenis);
         $perPage = min($request->input('per_page', 10), 1000);
         return response()->json($query->paginate($perPage));
     }
@@ -28,22 +30,24 @@ class PembayaranController extends Controller
         ]);
     }
 
+    // Admin mencatat pembayaran atas nama pelanggan; jumlah tetap dihitung server
     public function store(Request $request)
     {
         $data = $request->validate([
             'transaksi_id' => 'required|exists:transaksi,id',
-            'metode'       => 'required|string',
-            'jumlah'       => 'required|integer',
+            'jenis'        => 'nullable|in:sewa,denda',
+            'metode'       => 'required|string|max:50',
             'bukti'        => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
         ]);
 
-        if ($request->hasFile('bukti')) {
-            $data['bukti'] = $request->file('bukti')->store('bukti_bayar', 'public');
-        }
+        $pembayaran = Pembayaran::ajukan(
+            Transaksi::findOrFail($data['transaksi_id']),
+            $data['jenis'] ?? 'sewa',
+            $data['metode'],
+            $request->file('bukti'),
+        );
 
-        $data['status'] = 'menunggu verifikasi';
-
-        return response()->json(Pembayaran::create($data), 201);
+        return response()->json($pembayaran, 201);
     }
 
     public function show(Pembayaran $pembayaran)
@@ -51,26 +55,30 @@ class PembayaranController extends Controller
         return response()->json($pembayaran->load('transaksi.pelanggan', 'transaksi.kendaraan'));
     }
 
+    // Hanya untuk menolak; verifikasi lewat endpoint verifikasi
     public function update(Request $request, Pembayaran $pembayaran)
     {
         $data = $request->validate([
-            'status' => 'required|in:menunggu verifikasi,berhasil,ditolak',
+            'status'  => 'required|in:ditolak',
+            'catatan' => 'nullable|string|max:500',
         ]);
 
-        $pembayaran->update($data);
+        $pembayaran->tolak($data['catatan'] ?? null);
         return response()->json($pembayaran->load('transaksi.pelanggan', 'transaksi.kendaraan'));
     }
 
     public function destroy(Pembayaran $pembayaran)
     {
+        if ($pembayaran->status === 'berhasil') {
+            return response()->json(['message' => 'Pembayaran yang sudah berhasil tidak bisa dihapus.'], 422);
+        }
         $pembayaran->delete();
         return response()->json(['message' => 'Pembayaran dihapus.']);
     }
 
     public function verifikasi(Pembayaran $pembayaran)
     {
-        $pembayaran->update(['status' => 'berhasil', 'tanggal_bayar' => now()]);
-        $pembayaran->transaksi->update(['status' => 'aktif']);
-        return response()->json($pembayaran);
+        $pembayaran->verifikasi();
+        return response()->json($pembayaran->fresh('transaksi'));
     }
 }

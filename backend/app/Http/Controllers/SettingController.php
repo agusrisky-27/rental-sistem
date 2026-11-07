@@ -16,6 +16,14 @@ class SettingController extends Controller
         return response()->json(['data' => $formatted]);
     }
 
+    // Hanya key yang aman ditampilkan ke publik
+    public function publik()
+    {
+        $keys = ['app_name', 'app_description', 'rekening_info'];
+        $settings = \App\Models\Setting::whereIn('key', $keys)->pluck('value', 'key');
+        return response()->json(['data' => collect($keys)->mapWithKeys(fn ($k) => [$k => $settings[$k] ?? ''])]);
+    }
+
     public function update(Request $request)
     {
         $data = $request->all();

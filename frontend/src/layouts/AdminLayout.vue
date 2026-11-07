@@ -4,12 +4,12 @@
     <AppSidebar />
 
     <!-- Main area -->
-    <div class="ml-64 flex flex-col flex-1 min-w-0">
+    <div class="ml-64 print:ml-0 flex flex-col flex-1 min-w-0">
       <!-- Top Nav -->
       <AppTopNav />
 
       <!-- Page content -->
-      <main class="mt-16 flex-1 p-6 md:p-8">
+      <main class="mt-16 print:mt-0 flex-1 p-6 md:p-8">
         <RouterView />
       </main>
     </div>

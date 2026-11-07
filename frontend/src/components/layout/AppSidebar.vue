@@ -1,5 +1,5 @@
 <template>
-  <nav class="fixed left-0 top-0 h-screen w-64 flex flex-col py-6 px-4 z-40
+  <nav class="print:hidden fixed left-0 top-0 h-screen w-64 flex flex-col py-6 px-4 z-40
               bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800
               transition-colors shadow-sm">
 
@@ -17,7 +17,7 @@
 
     <!-- Footer Nav -->
     <div class="mt-auto border-t border-slate-200 dark:border-slate-800 pt-4 space-y-2">
-      <SidebarLink to="/pengaturan" icon="settings" label="Pengaturan" />
+      <SidebarLink to="/admin/pengaturan" icon="settings" label="Pengaturan" />
 
       <!-- User profile card -->
       <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 mt-2 transition-colors">
@@ -58,12 +58,13 @@ const userInitials = computed(() => {
 })
 
 const mainNav = [
-  { to: '/dashboard',    icon: 'dashboard',         label: 'Dashboard'    },
-  { to: '/kendaraan',    icon: 'directions_car',    label: 'Kendaraan'    },
-  { to: '/pelanggan',    icon: 'group',             label: 'Pelanggan'    },
-  { to: '/transaksi',    icon: 'receipt_long',      label: 'Transaksi'    },
-  { to: '/pembayaran',   icon: 'payments',          label: 'Pembayaran'   },
-  { to: '/pengembalian', icon: 'assignment_return', label: 'Pengembalian' },
+  { to: '/admin/dashboard',    icon: 'dashboard',         label: 'Dashboard'    },
+  { to: '/admin/kendaraan',    icon: 'directions_car',    label: 'Kendaraan'    },
+  { to: '/admin/pelanggan',    icon: 'group',             label: 'Pelanggan'    },
+  { to: '/admin/transaksi',    icon: 'receipt_long',      label: 'Transaksi'    },
+  { to: '/admin/pembayaran',   icon: 'payments',          label: 'Pembayaran'   },
+  { to: '/admin/pengembalian', icon: 'assignment_return', label: 'Pengembalian' },
+  { to: '/admin/laporan',      icon: 'bar_chart',         label: 'Laporan'      },
 ]
 
 async function handleLogout() {

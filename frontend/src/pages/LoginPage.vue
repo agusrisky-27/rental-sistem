@@ -54,12 +54,17 @@
                    py-3.5 rounded-lg flex justify-center items-center gap-2 transition-all
                    shadow-sm disabled:opacity-60">
             <span v-if="loading" class="material-symbols-outlined animate-spin icon-20">progress_activity</span>
-            <span v-else>Masuk Ke Dashboard</span>
+            <span v-else>Masuk</span>
             <span v-if="!loading" class="material-symbols-outlined icon-20">arrow_forward</span>
           </button>
 
           <!-- Error -->
           <p v-if="error" class="text-sm font-medium text-rose-500 text-center">{{ error }}</p>
+
+          <p class="text-sm text-center text-slate-500 dark:text-slate-400">
+            Belum punya akun?
+            <RouterLink to="/register" class="text-secondary dark:text-blue-400 font-semibold hover:underline">Daftar</RouterLink>
+          </p>
         </form>
       </div>
     </div>
@@ -68,10 +73,11 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const route  = useRoute()
 const auth   = useAuthStore()
 
 const form    = ref({ email: '', password: '', remember: false })
@@ -83,7 +89,7 @@ async function handleLogin() {
   loading.value = true
   try {
     await auth.login(form.value.email, form.value.password)
-    router.push('/dashboard')
+    router.push(route.query.redirect || auth.homePath)
   } catch (e) {
     const data = e.response?.data
     if (data?.errors) {

@@ -6,14 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Pengembalian;
 use App\Models\Transaksi;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 
 class PengembalianController extends Controller
 {
     public function index(Request $request)
     {
         $query = Pengembalian::with(['transaksi.kendaraan', 'transaksi.pelanggan'])->latest();
-        if ($request->status) $query->where('status', $request->status);
+        if ($request->status)       $query->where('status', $request->status);
+        if ($request->denda_status) $query->where('denda_status', $request->denda_status);
         $perPage = min($request->input('per_page', 10), 1000);
         return response()->json($query->paginate($perPage));
     }
@@ -21,24 +21,16 @@ class PengembalianController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'transaksi_id'      => 'required|exists:transaksi,id|unique:pengembalian,transaksi_id',
+            'transaksi_id'      => 'required|exists:transaksi,id',
             'tanggal_kembali'   => 'required|date',
-            'kondisi_kendaraan' => 'nullable|string',
+            'kondisi_kendaraan' => 'nullable|string|max:1000',
         ]);
 
-        $transaksi = Transaksi::findOrFail($data['transaksi_id']);
-
-        // Hitung denda keterlambatan
-        $rencanaDate = Carbon::parse($transaksi->tanggal_akhir);
-        $aktualDate  = Carbon::parse($data['tanggal_kembali']);
-        $telat       = $aktualDate->gt($rencanaDate) ? $aktualDate->diffInDays($rencanaDate) : 0;
-        $denda       = $telat > 0 ? ($transaksi->kendaraan->harga * $telat) : 0;
-
-        $pengembalian = Pengembalian::create([
-            ...$data,
-            'denda'  => $denda,
-            'status' => $denda > 0 ? 'terlambat' : 'tepat waktu',
-        ]);
+        $pengembalian = Pengembalian::catat(
+            Transaksi::findOrFail($data['transaksi_id']),
+            $data['tanggal_kembali'],
+            $data['kondisi_kendaraan'] ?? null,
+        );
 
         return response()->json($pengembalian->load('transaksi'), 201);
     }
@@ -50,7 +42,11 @@ class PengembalianController extends Controller
 
     public function update(Request $request, Pengembalian $pengembalian)
     {
-        $pengembalian->update($request->only(['kondisi_kendaraan', 'status']));
+        $data = $request->validate([
+            'kondisi_kendaraan' => 'nullable|string|max:1000',
+        ]);
+
+        $pengembalian->update($data);
         return response()->json($pengembalian);
     }
 
@@ -60,11 +56,9 @@ class PengembalianController extends Controller
         return response()->json(['message' => 'Data dihapus.']);
     }
 
-    public function terima(Pengembalian $pengembalian)
+    public function lunas(Pengembalian $pengembalian)
     {
-        $pengembalian->update(['status' => 'selesai']);
-        $pengembalian->transaksi->update(['status' => 'selesai']);
-        $pengembalian->transaksi->kendaraan->update(['status' => 'tersedia']);
-        return response()->json($pengembalian);
+        $pengembalian->lunasi();
+        return response()->json($pengembalian->fresh('transaksi.kendaraan', 'transaksi.pelanggan'));
     }
 }

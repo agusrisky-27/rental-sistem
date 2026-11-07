@@ -4,16 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
 class Pelanggan extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     protected $table = 'pelanggan';
 
 
     protected $fillable = [
-        'nama', 'email', 'telepon', 'alamat', 'level', 'foto_ktp',
+        'user_id', 'nama', 'email', 'telepon', 'alamat', 'level', 'foto_ktp',
     ];
 
     protected $appends = ['foto_ktp_url'];
@@ -26,5 +27,10 @@ class Pelanggan extends Model
     public function transaksi()
     {
         return $this->hasMany(Transaksi::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

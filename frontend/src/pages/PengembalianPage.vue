@@ -43,6 +43,12 @@
         </div>
       </div>
 
+      <select v-model="filterStatus" @change="applyFilter" class="form-input py-2 text-sm w-44">
+        <option value="">Semua Status</option>
+        <option value="tepat waktu">Tepat Waktu</option>
+        <option value="terlambat">Terlambat</option>
+      </select>
+
       <div v-if="search" class="flex justify-end w-full md:w-auto">
         <button @click="search = ''" class="text-xs font-semibold text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center gap-1">
           <span class="material-symbols-outlined icon-16">restart_alt</span>
@@ -64,7 +70,7 @@
               <th class="p-4 font-semibold">Pelanggan</th>
               <th class="p-4 font-semibold">Jadwal Kembali</th>
               <th class="p-4 font-semibold">Status</th>
-              <th class="p-4 font-semibold">Denda (Est)</th>
+              <th class="p-4 font-semibold">Denda</th>
               <th class="p-4 font-semibold text-right">Aksi</th>
             </tr>
           </thead>
@@ -109,17 +115,15 @@
                 <StatusBadge :status="item.status" />
               </td>
               <td class="p-4 font-semibold" :class="item.denda ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400 dark:text-slate-500'">
-                {{ item.denda ? formatRupiah(item.denda) : '-' }}
+                <div>{{ item.denda ? formatRupiah(item.denda) : '-' }}</div>
+                <StatusBadge v-if="item.denda_status" :status="item.denda_status" class="mt-1" />
               </td>
               <td class="p-4 text-right">
-                <button v-if="item.status !== 'selesai'" @click="openTerima(item)"
+                <button v-if="item.denda_status === 'belum bayar'" @click="lunasi(item)"
                   class="bg-secondary text-on-secondary px-4 py-2 rounded-lg text-label-md font-bold hover:bg-secondary-container transition-colors shadow-sm">
-                  Terima
+                  Lunasi Denda (Tunai)
                 </button>
-                <span v-else class="text-label-md text-emerald-600 dark:text-emerald-400 font-semibold flex items-center justify-end gap-1">
-                  <span class="material-symbols-outlined icon-18">check_circle</span>
-                  Selesai
-                </span>
+                <span v-else class="text-label-md text-slate-400 dark:text-slate-500">-</span>
               </td>
             </tr>
           </tbody>
@@ -142,58 +146,6 @@
       </div>
     </div>
 
-    <!-- Modal Detail Pengembalian -->
-    <BaseModal v-model="showModal" max-width="600px">
-      <template #header>
-        <h2 class="text-headline-md font-headline-md font-bold text-slate-900 dark:text-white">Detail Pengembalian</h2>
-      </template>
-
-      <div v-if="selected" class="flex flex-col gap-5">
-        <!-- Info grid -->
-        <div class="grid grid-cols-2 gap-y-3 gap-x-4 bg-slate-50 dark:bg-slate-900/70 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-          <div v-for="row in infoRows" :key="row.label" class="flex flex-col"
-            :class="row.full ? 'col-span-2' : ''">
-            <span class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">
-              {{ row.label }}
-            </span>
-            <span class="text-body-md font-body-md text-slate-800 dark:text-slate-200" :class="row.bold ? 'font-bold text-rose-600 dark:text-rose-400' : ''">
-              {{ row.value }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Denda warning -->
-        <div v-if="selected.denda"
-          class="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl p-4 flex items-start gap-3">
-          <span class="material-symbols-outlined text-amber-500 fill mt-0.5">warning</span>
-          <div>
-            <h3 class="text-label-md font-bold text-amber-900 dark:text-amber-300 mb-0.5">
-              Keterlambatan · Denda: {{ formatRupiah(selected.denda) }}
-            </h3>
-            <p class="text-xs text-amber-800 dark:text-amber-400">Denda dihitung otomatis berdasarkan tarif harian keterlambatan.</p>
-          </div>
-        </div>
-
-        <!-- Catatan kondisi -->
-        <div class="flex flex-col gap-1.5">
-          <label class="text-label-md font-medium text-slate-700 dark:text-slate-300">Catatan Kondisi Kendaraan</label>
-          <textarea v-model="catatan" rows="3" placeholder="Misal: Baret halus di bumper depan, bensin full."
-            class="form-input resize-none"></textarea>
-        </div>
-      </div>
-
-      <template #footer>
-        <button @click="showModal = false"
-          class="px-5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 text-label-md font-semibold hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
-          Batal
-        </button>
-        <button @click="selesaikan"
-          class="px-5 py-2.5 rounded-lg bg-secondary text-on-secondary font-bold
-                 hover:bg-secondary-container text-label-md shadow-sm transition-colors">
-          Simpan & Selesaikan
-        </button>
-      </template>
-    </BaseModal>
   </div>
 </template>
 
@@ -202,13 +154,10 @@ import { ref, computed, onMounted } from 'vue'
 import { useToastStore } from '@/stores/toast'
 import api from '@/services/api'
 import StatusBadge from '@/components/ui/StatusBadge.vue'
-import BaseModal   from '@/components/ui/BaseModal.vue'
 
 const toast     = useToastStore()
 const search    = ref('')
-const showModal = ref(false)
-const selected  = ref(null)
-const catatan   = ref('')
+const filterStatus = ref('')
 const loading   = ref(false)
 const currentPage = ref(1)
 const pagination = ref(null)
@@ -217,7 +166,9 @@ const data      = ref([])
 const fetchPengembalian = async () => {
   loading.value = true
   try {
-    const response = await api.get(`/pengembalian?page=${currentPage.value}&status=`)
+    const response = await api.get('/pengembalian', {
+      params: { page: currentPage.value, status: filterStatus.value }
+    })
     data.value = response.data.data
     pagination.value = {
       current_page: response.data.current_page,
@@ -254,13 +205,10 @@ const filteredData   = computed(() => {
   )
 })
 
-const infoRows = computed(() => selected.value ? [
-  { label:'Pelanggan',               value: selected.value.transaksi?.pelanggan?.nama || '-' },
-  { label:'Kendaraan',               value: `${selected.value.transaksi?.kendaraan?.nama || ''} (${selected.value.transaksi?.kendaraan?.plat || ''})` },
-  { label:'Jadwal Kembali',          value: selected.value.tanggal_kembali },
-  { label:'Status',                  value: selected.value.status },
-  { label:'Denda Estimasi', full:true, bold:true, value: selected.value.denda ? formatRupiah(selected.value.denda) : 'Tidak ada denda' },
-] : [])
+function applyFilter() {
+  currentPage.value = 1
+  fetchPengembalian()
+}
 
 function initials(n) { 
   if (!n) return ''
@@ -268,22 +216,13 @@ function initials(n) {
 }
 function formatRupiah(n){ return 'Rp ' + Number(n).toLocaleString('id-ID') }
 
-function openTerima(item) {
-  selected.value = item
-  catatan.value  = ''
-  showModal.value = true
-}
-
-async function selesaikan() {
+async function lunasi(item) {
   try {
-    await api.patch(`/pengembalian/${selected.value.id}/terima`, {
-      kondisi_kendaraan: catatan.value
-    })
-    toast.success('Selesai', `Pengembalian ${selected.value.transaksi?.kendaraan?.nama || 'kendaraan'} berhasil dicatat.`)
-    showModal.value = false
+    await api.patch(`/pengembalian/${item.id}/lunas`)
+    toast.success('Lunas', 'Denda dicatat lunas (tunai).')
     fetchPengembalian()
   } catch (error) {
-    toast.error('Gagal', 'Gagal memproses pengembalian')
+    toast.error('Gagal', error.response?.data?.message || 'Gagal melunasi denda')
   }
 }
 </script>

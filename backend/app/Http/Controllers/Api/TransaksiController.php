@@ -3,17 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Transaksi;
-use App\Models\Kendaraan;
+use App\Models\Notification;
+use App\Models\Pembayaran;
 use App\Models\Pengembalian;
+use App\Models\Transaksi;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class TransaksiController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Transaksi::with(['kendaraan', 'pelanggan'])->latest();
+        $query = Transaksi::with(['kendaraan', 'pelanggan', 'pembayaran', 'pengembalian'])->latest();
 
         if ($request->status)        $query->where('status', $request->status);
         if ($request->tanggal_mulai) $query->whereDate('tanggal_mulai', '>=', $request->tanggal_mulai);
@@ -36,79 +37,78 @@ class TransaksiController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'kendaraan_id'  => 'required|exists:kendaraan,id',
-            'pelanggan_id'  => 'required|exists:pelanggan,id',
+            'kendaraan_id'  => 'required|exists:kendaraan,id,deleted_at,NULL',
+            'pelanggan_id'  => 'required|exists:pelanggan,id,deleted_at,NULL',
             'tanggal_mulai' => 'required|date',
             'tanggal_akhir' => 'required|date|after:tanggal_mulai',
         ]);
 
-        $kendaraan = Kendaraan::findOrFail($data['kendaraan_id']);
-        $durasi    = Carbon::parse($data['tanggal_mulai'])->diffInDays(Carbon::parse($data['tanggal_akhir']));
-        $total     = $kendaraan->harga * max(1, $durasi);
-
-        $transaksi = Transaksi::create([
-            ...$data,
-            'total'  => $total,
-            'status' => 'menunggu',
-        ]);
-
-        $kendaraan->update(['status' => 'disewa']);
+        $transaksi = Transaksi::buat($data['kendaraan_id'], $data['pelanggan_id'], $data['tanggal_mulai'], $data['tanggal_akhir']);
 
         return response()->json($transaksi->load(['kendaraan', 'pelanggan']), 201);
     }
 
     public function show(Transaksi $transaksi)
     {
-        return response()->json($transaksi->load(['kendaraan', 'pelanggan']));
+        return response()->json($transaksi->load(['kendaraan', 'pelanggan', 'semuaPembayaran', 'pengembalian']));
     }
 
+    // Admin hanya boleh membatalkan/menolak booking yang masih menunggu
     public function update(Request $request, Transaksi $transaksi)
     {
-        $data = $request->validate([
-            'status' => 'required|in:menunggu,aktif,selesai,dibatalkan',
+        $request->validate([
+            'status' => 'required|in:dibatalkan',
         ]);
 
-        // Jika transaksi dibatalkan/ditolak, kembalikan status kendaraan menjadi tersedia
-        if ($data['status'] === 'dibatalkan' && $transaksi->status !== 'dibatalkan') {
-            $transaksi->kendaraan->update(['status' => 'tersedia']);
-        }
+        $transaksi->batalkan();
 
-        $transaksi->update($data);
+        Notification::keUser($transaksi->userPelangganId(), 'transaction', 'Booking dibatalkan',
+            "Booking #{$transaksi->id} dibatalkan oleh admin.", ['transaksi_id' => $transaksi->id]);
+
         return response()->json($transaksi->load(['kendaraan', 'pelanggan']));
     }
 
     public function destroy(Transaksi $transaksi)
     {
+        // Riwayat sewa & pendapatan tidak boleh hilang; hanya booking batal yang boleh dihapus
+        $transaksi->pastikanStatus('dibatalkan');
         $transaksi->delete();
         return response()->json(['message' => 'Transaksi dihapus.']);
     }
 
+    // Konfirmasi manual = pelanggan bayar tunai di tempat
     public function konfirmasi(Transaksi $transaksi)
     {
-        $transaksi->update(['status' => 'aktif']);
-        return response()->json($transaksi);
-    }
+        $transaksi->pastikanStatus('menunggu');
 
-    public function selesai(Transaksi $transaksi)
-    {
-        // Catat pengembalian jika belum ada, sekaligus hitung denda keterlambatan
-        if (! $transaksi->pengembalian) {
-            $rencana = Carbon::parse($transaksi->tanggal_akhir);
-            $aktual  = Carbon::now();
-            $telat   = $aktual->gt($rencana) ? $aktual->diffInDays($rencana) : 0;
-            $denda   = $telat > 0 ? ($transaksi->kendaraan->harga * $telat) : 0;
-
-            Pengembalian::create([
-                'transaksi_id'      => $transaksi->id,
-                'tanggal_kembali'   => $aktual->toDateString(),
-                'kondisi_kendaraan' => null,
-                'denda'             => $denda,
-                'status'            => 'selesai',
-            ]);
+        if ($transaksi->semuaPembayaran()->where('jenis', 'sewa')->where('status', 'menunggu verifikasi')->exists()) {
+            return response()->json(['message' => 'Ada bukti pembayaran yang menunggu verifikasi. Verifikasi di menu Pembayaran.'], 422);
         }
 
-        $transaksi->update(['status' => 'selesai']);
-        $transaksi->kendaraan->update(['status' => 'tersedia']);
-        return response()->json($transaksi->load('pengembalian'));
+        DB::transaction(function () use ($transaksi) {
+            Pembayaran::create([
+                'transaksi_id'  => $transaksi->id,
+                'jenis'         => 'sewa',
+                'metode'        => 'tunai',
+                'jumlah'        => $transaksi->total,
+                'status'        => 'berhasil',
+                'tanggal_bayar' => now(),
+            ]);
+            $transaksi->aktifkan();
+        });
+
+        return response()->json($transaksi->fresh(['kendaraan', 'pelanggan']));
+    }
+
+    public function selesai(Request $request, Transaksi $transaksi)
+    {
+        $data = $request->validate([
+            'tanggal_kembali'   => 'nullable|date',
+            'kondisi_kendaraan' => 'nullable|string|max:1000',
+        ]);
+
+        Pengembalian::catat($transaksi, $data['tanggal_kembali'] ?? now()->toDateString(), $data['kondisi_kendaraan'] ?? null);
+
+        return response()->json($transaksi->fresh(['kendaraan', 'pelanggan', 'pengembalian']));
     }
 }

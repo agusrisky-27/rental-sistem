@@ -71,7 +71,10 @@ class PelangganController extends Controller
 
     public function destroy(Pelanggan $pelanggan)
     {
-        if ($pelanggan->foto_ktp) Storage::disk('public')->delete($pelanggan->foto_ktp);
+        if ($pelanggan->transaksi()->whereIn('status', \App\Models\Transaksi::STATUS_JADWAL)->exists()) {
+            return response()->json(['message' => 'Pelanggan masih punya booking/sewa berjalan.'], 422);
+        }
+        // Soft delete: KTP tetap disimpan untuk riwayat transaksi
         $pelanggan->delete();
         return response()->json(['message' => 'Pelanggan dihapus.']);
     }

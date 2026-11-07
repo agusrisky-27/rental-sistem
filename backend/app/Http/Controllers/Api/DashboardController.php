@@ -7,7 +7,6 @@ use App\Models\Kendaraan;
 use App\Models\Pelanggan;
 use App\Models\Transaksi;
 use App\Models\Pembayaran;
-use App\Models\Pengembalian;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -19,18 +18,16 @@ class DashboardController extends Controller
         $startLastMonth = $now->copy()->subMonthNoOverflow()->startOfMonth();
         $endLastMonth   = $now->copy()->subMonthNoOverflow()->endOfMonth();
 
-        // Pendapatan: pembayaran berhasil + denda keterlambatan
+        // Pendapatan: pembayaran berhasil (sewa + denda). Denda yang belum dibayar tidak dihitung.
         $pendapatanBulanIni = Pembayaran::where('status', 'berhasil')
             ->whereBetween('tanggal_bayar', [$startThisMonth, $now])
-            ->sum('jumlah')
-            + Pengembalian::whereBetween('created_at', [$startThisMonth, $now])->sum('denda');
+            ->sum('jumlah');
 
         $pendapatanBulanLalu = Pembayaran::where('status', 'berhasil')
             ->whereBetween('tanggal_bayar', [$startLastMonth, $endLastMonth])
-            ->sum('jumlah')
-            + Pengembalian::whereBetween('created_at', [$startLastMonth, $endLastMonth])->sum('denda');
+            ->sum('jumlah');
 
-        $totalPendapatan = Pembayaran::where('status', 'berhasil')->sum('jumlah') + Pengembalian::sum('denda');
+        $totalPendapatan = Pembayaran::where('status', 'berhasil')->sum('jumlah');
 
         $trendPendapatan = $pendapatanBulanLalu > 0
             ? round((($pendapatanBulanIni - $pendapatanBulanLalu) / $pendapatanBulanLalu) * 100, 1)

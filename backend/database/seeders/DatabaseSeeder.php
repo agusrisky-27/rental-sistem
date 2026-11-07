@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
         Setting::updateOrCreate(['key' => 'app_name'], ['value' => 'SiwaKen']);
         Setting::updateOrCreate(['key' => 'app_description'], ['value' => 'Sistem Sewa Kendaraan']);
         Setting::updateOrCreate(['key' => 'app_logo'], ['value' => '']);
+        Setting::updateOrCreate(['key' => 'rekening_info'], ['value' => 'BCA 1234567890 a.n. SewaKen']);
 
         // Sample kendaraan
         $kendaraan = [
@@ -44,5 +45,15 @@ class DatabaseSeeder extends Seeder
             ['nama'=>'Deni Kusuma',    'email'=>'deni@email.com',  'telepon'=>'08213456789', 'level'=>'Basic'],
         ];
         foreach ($pelanggan as $p) Pelanggan::create($p);
+
+        // Akun demo pelanggan, ditautkan ke Ahmad Santoso
+        $userPelanggan = User::create([
+            'name'     => 'Ahmad Santoso',
+            'email'    => 'pelanggan@siwaken.com',
+            'telepon'  => '08123456789',
+            'password' => Hash::make('password'),
+            'role'     => 'pelanggan',
+        ]);
+        Pelanggan::where('email', 'ahmad@email.com')->update(['user_id' => $userPelanggan->id]);
     }
 }

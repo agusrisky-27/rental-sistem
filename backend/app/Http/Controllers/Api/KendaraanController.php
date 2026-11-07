@@ -86,7 +86,10 @@ class KendaraanController extends Controller
 
     public function destroy(Kendaraan $kendaraan)
     {
-        if ($kendaraan->foto) Storage::disk('public')->delete($kendaraan->foto);
+        if ($kendaraan->transaksi()->whereIn('status', \App\Models\Transaksi::STATUS_JADWAL)->exists()) {
+            return response()->json(['message' => 'Kendaraan masih punya booking/sewa berjalan.'], 422);
+        }
+        // Soft delete: foto tetap disimpan untuk riwayat transaksi
         $kendaraan->delete();
         return response()->json(['message' => 'Kendaraan dihapus.']);
     }

@@ -1,135 +1,112 @@
-# SiwaKen — Admin Dashboard
-Vehicle Rental System | Laravel 11 + Vue 3 + Vite + Tailwind CSS
+# SewaKen — Sistem Sewa Kendaraan
+Laravel 13 + Sanctum (REST API) · Vue 3 + Vite + Pinia + Tailwind CSS
+
+Dua sisi dalam satu aplikasi:
+- **Pelanggan** (`/`): katalog, cek ketersediaan, booking, upload bukti bayar, riwayat, bayar denda.
+- **Admin** (`/admin`): dashboard, kendaraan, pelanggan, transaksi, pembayaran, pengembalian, laporan, pengaturan.
 
 ---
 
 ## 📁 Struktur Project
 
 ```
-siwaken/
-├── backend/     ← Laravel 11 (REST API + Sanctum)
-└── frontend/    ← Vue 3 + Vite + Pinia + Tailwind CSS
+rental_sistem/
+├── backend/     ← Laravel 13 (REST API + Sanctum)
+├── frontend/    ← Vue 3 + Vite + Pinia + Tailwind CSS
+└── docs/plan.md ← keputusan desain & daftar tugas
 ```
 
 ---
 
-## 🚀 Setup Backend (Laravel)
+## 🚀 Setup Backend
 
-### 1. Install Laravel (jika belum ada project)
 ```bash
-composer create-project laravel/laravel backend
 cd backend
-```
-
-### 2. Copy file-file dari folder backend/ ini ke project Laravel kamu:
-- `app/Http/Controllers/Api/` → semua controller
-- `app/Models/` → semua model
-- `routes/api.php`
-- `database/migrations/` → semua migration
-- `database/seeders/DatabaseSeeder.php`
-
-### 3. Install Sanctum
-```bash
-composer require laravel/sanctum
-php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
-```
-
-### 4. Setup .env
-```bash
+composer install
 cp .env.example .env
 php artisan key:generate
-```
-Edit `.env` → isi DB_DATABASE, DB_USERNAME, DB_PASSWORD
-
-### 5. Tambahkan kolom `role` ke users migration
-```php
-$table->string('role')->default('admin');
-```
-
-### 6. Jalankan migration & seeder
-```bash
+# Edit .env → DB_DATABASE, DB_USERNAME, DB_PASSWORD (MySQL)
 php artisan migrate --seed
 php artisan storage:link
+php artisan serve            # http://localhost:8000
 ```
 
-### 7. Jalankan server
+Booking yang belum dibayar 24 jam dibatalkan otomatis oleh scheduler. Saat development jalankan di terminal terpisah:
+
 ```bash
-php artisan serve
-# Berjalan di http://localhost:8000
+php artisan schedule:work
+# atau sekali jalan: php artisan transaksi:expire
+```
+
+Test (sqlite in-memory, tidak menyentuh DB MySQL):
+
+```bash
+php artisan test
 ```
 
 ---
 
-## 🎨 Setup Frontend (Vue 3)
+## 🎨 Setup Frontend
 
-### 1. Masuk ke folder frontend
 ```bash
 cd frontend
-```
-
-### 2. Install dependencies
-```bash
 npm install
-```
-
-### 3. Setup .env
-```bash
-cp .env.example .env
-# VITE_API_URL=http://localhost:8000/api
-```
-
-### 4. Jalankan dev server
-```bash
-npm run dev
-# Berjalan di http://localhost:3000
+cp .env.example .env         # VITE_API_URL=http://localhost:8000/api
+npm run dev                  # http://localhost:3000
 ```
 
 ---
 
-## 🔐 Kredensial Default
+## 🔐 Akun Demo
 
-| Email                | Password   | Role  |
-|----------------------|------------|-------|
-| admin@siwaken.com    | password   | Admin |
+| Email                  | Password | Role      |
+|------------------------|----------|-----------|
+| admin@siwaken.com      | password | Admin     |
+| pelanggan@siwaken.com  | password | Pelanggan |
 
----
-
-## 📋 Halaman & Fitur
-
-| Halaman        | Fitur                                                   |
-|----------------|---------------------------------------------------------|
-| Login          | Autentikasi dengan Sanctum token                        |
-| Dashboard      | Stats cards, aktivitas terbaru                          |
-| Kendaraan      | CRUD + modal tambah/edit/hapus + filter + search        |
-| Pelanggan      | CRUD + level keanggotaan (Gold/Silver/Basic)            |
-| Transaksi      | Lihat detail, konfirmasi, tandai selesai, stepper status|
-| Pembayaran     | Verifikasi manual, detail modal                         |
-| Pengembalian   | Terima kendaraan, hitung denda, catatan kondisi         |
+Register publik (`/register`) hanya membuat akun **pelanggan**. Akun admin hanya dibuat lewat seeder.
 
 ---
 
-## 🎨 Design System
+## 🔄 Alur Sewa
 
-Semua warna, font, dan spacing 100% matching dengan desain Stitch:
-- **Font**: Plus Jakarta Sans (headline) + Inter (body)
-- **Primary Blue**: `#0058be` (secondary token)
-- **Active nav**: `bg-secondary-fixed text-secondary`
-- **Icons**: Material Symbols Outlined
+1. Pelanggan memilih mobil & tanggal → transaksi **menunggu** (jadwal mobil terkunci).
+2. Pelanggan upload bukti transfer → pembayaran **menunggu verifikasi**.
+3. Admin verifikasi → transaksi **aktif**, kendaraan **disewa**.
+   (Bayar tunai: admin klik *Konfirmasi* di halaman Transaksi.)
+   Jika bukti ditolak, pelanggan bisa upload ulang.
+4. Admin catat pengembalian → transaksi **selesai**, kendaraan **tersedia**.
+   Telat → denda = harga/hari × hari telat, status denda **belum bayar**.
+5. Pelanggan upload bukti bayar denda (atau admin *Lunasi Denda* tunai) → denda **lunas**.
+
+Pendapatan dashboard & laporan hanya menghitung pembayaran **berhasil**.
+Hapus kendaraan/pelanggan memakai soft delete, jadi riwayat transaksi tetap ada.
+
+---
+
+## 📋 Halaman
+
+| Halaman (route)         | Fitur                                                        |
+|-------------------------|--------------------------------------------------------------|
+| `/`                     | Katalog + filter tipe & tanggal tersedia                     |
+| `/kendaraan/:id`        | Detail, kalender ketersediaan, form booking                  |
+| `/akun/booking`         | Riwayat booking, upload bukti bayar, batal, bayar denda      |
+| `/akun/profil`          | Data diri, foto KTP, ganti password                          |
+| `/admin/dashboard`      | Statistik, transaksi terbaru                                 |
+| `/admin/transaksi`      | Konfirmasi tunai, tolak, catat pengembalian                  |
+| `/admin/pembayaran`     | Verifikasi / tolak bukti (dengan alasan)                     |
+| `/admin/pengembalian`   | Daftar pengembalian, status & pelunasan denda                |
+| `/admin/laporan`        | Pendapatan per bulan, export CSV, cetak/PDF                  |
+| `/admin/pengaturan`     | Profil, password, pengaturan aplikasi & info rekening        |
+
+Notifikasi (ikon lonceng) dikirim ke admin saat ada booking/bukti bayar baru, dan ke pelanggan saat pembayaran diverifikasi/ditolak, booking dibatalkan, atau ada denda.
 
 ---
 
 ## 🛠 Tech Stack
 
-**Frontend**
-- Vue 3 (Composition API + `<script setup>`)
-- Vite 5
-- Pinia (state management)
-- Vue Router 4
-- Tailwind CSS 3
-- Axios
+**Frontend**: Vue 3 (`<script setup>`), Vite 5, Pinia, Vue Router 4, Tailwind CSS 3, Axios, Material Symbols.
 
-**Backend**
-- Laravel 11
-- Laravel Sanctum (token auth)
-- MySQL
-- Eloquent ORM
+**Backend**: Laravel 13, Sanctum (token), MySQL, Eloquent (soft delete), scheduler, PHPUnit.
+
+**Keamanan**: role middleware (`role:admin` / `role:pelanggan`), throttle login/register 5×/menit, cek kepemilikan transaksi pelanggan, jumlah pembayaran dihitung server.

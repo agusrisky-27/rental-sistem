@@ -117,7 +117,10 @@
                   <span>{{ p.metode }}</span>
                 </div>
               </td>
-              <td class="py-4 px-6 font-semibold text-slate-900 dark:text-slate-100">{{ formatRupiah(p.jumlah) }}</td>
+              <td class="py-4 px-6 font-semibold text-slate-900 dark:text-slate-100">
+                <div>{{ formatRupiah(p.jumlah) }}</div>
+                <StatusBadge :status="p.jenis || 'sewa'" class="mt-1" />
+              </td>
               <td class="py-4 px-6">
                 <StatusBadge :status="p.status" />
               </td>
@@ -125,6 +128,10 @@
                 <!-- Menunggu: approve/reject -->
                 <div v-if="p.status === 'menunggu verifikasi'"
                   class="flex justify-end gap-1.5">
+                  <a v-if="p.bukti_url" :href="p.bukti_url" target="_blank" rel="noopener" title="Lihat Bukti"
+                    class="p-1.5 text-secondary dark:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined icon-20">image</span>
+                  </a>
                   <button @click="tolak(p)" title="Tolak"
                     class="p-1.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors">
                     <span class="material-symbols-outlined icon-20">close</span>
@@ -194,6 +201,31 @@
         </button>
       </template>
     </BaseModal>
+
+    <!-- Modal Tolak Pembayaran -->
+    <BaseModal v-model="showTolak" max-width="480px">
+      <template #header>
+        <h2 class="text-headline-md font-headline-md font-bold text-slate-900 dark:text-white">Tolak Pembayaran</h2>
+      </template>
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-label-md font-medium text-slate-700 dark:text-slate-300">Alasan penolakan</label>
+        <textarea v-model="alasanTolak" rows="3" placeholder="Misal: Bukti transfer tidak terbaca."
+          class="form-input resize-none"></textarea>
+      </div>
+
+      <template #footer>
+        <button @click="showTolak = false"
+          class="px-5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 text-label-md font-semibold
+                 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
+          Batal
+        </button>
+        <button @click="kirimTolak"
+          class="px-5 py-2.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700 text-label-md font-bold shadow-sm transition-colors">
+          Tolak
+        </button>
+      </template>
+    </BaseModal>
   </div>
 </template>
 
@@ -209,6 +241,9 @@ const search       = ref('')
 const filterStatus = ref('')
 const showDetail   = ref(false)
 const selected     = ref(null)
+const showTolak    = ref(false)
+const tolakTarget  = ref(null)
+const alasanTolak  = ref('')
 const loading      = ref(false)
 const exporting    = ref(false)
 const currentPage  = ref(1)
@@ -328,18 +363,26 @@ async function setujui(p) {
     fetchPembayaran()
     fetchStats()
   } catch (error) {
-    toast.error('Gagal', 'Gagal mengkonfirmasi pembayaran')
+    toast.error('Gagal', error.response?.data?.message || 'Gagal mengkonfirmasi pembayaran')
   }
 }
 
-async function tolak(p) {
+function tolak(p) {
+  tolakTarget.value = p
+  alasanTolak.value = ''
+  showTolak.value = true
+}
+
+async function kirimTolak() {
+  const p = tolakTarget.value
   try {
-    await api.patch(`/pembayaran/${p.id}`, { status: 'ditolak' })
+    await api.patch(`/pembayaran/${p.id}`, { status: 'ditolak', catatan: alasanTolak.value || undefined })
     toast.success('Ditolak', `Pembayaran #${p.id} ditolak.`)
+    showTolak.value = false
     fetchPembayaran()
     fetchStats()
   } catch (error) {
-    toast.error('Gagal', 'Gagal menolak pembayaran')
+    toast.error('Gagal', error.response?.data?.message || 'Gagal menolak pembayaran')
   }
 }
 

@@ -220,7 +220,7 @@
                  text-label-md font-semibold transition-colors">
           Tutup
         </button>
-        <button v-if="selected?.status === 'aktif'" @click="tandaiKembali"
+        <button v-if="selected?.status === 'aktif'" @click="bukaKembali"
           class="px-5 py-2.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700
                  text-label-md font-bold shadow-sm flex items-center gap-2 transition-colors">
           <span class="material-symbols-outlined icon-18">task_alt</span>
@@ -238,6 +238,37 @@
             Konfirmasi
           </button>
         </template>
+      </template>
+    </BaseModal>
+
+    <!-- Modal Pengembalian -->
+    <BaseModal v-model="showKembali" max-width="480px">
+      <template #header>
+        <h2 class="text-headline-md font-headline-md font-bold text-slate-900 dark:text-white">Catat Pengembalian</h2>
+      </template>
+
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-label-md font-medium text-slate-700 dark:text-slate-300">Tanggal Kembali</label>
+          <input type="date" v-model="formKembali.tanggal_kembali" class="form-input" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-label-md font-medium text-slate-700 dark:text-slate-300">Kondisi Kendaraan</label>
+          <textarea v-model="formKembali.kondisi_kendaraan" rows="3" placeholder="Misal: Baret halus di bumper depan, bensin full."
+            class="form-input resize-none"></textarea>
+        </div>
+      </div>
+
+      <template #footer>
+        <button @click="showKembali = false"
+          class="px-5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600
+                 text-label-md font-semibold transition-colors">
+          Batal
+        </button>
+        <button @click="tandaiKembali"
+          class="px-5 py-2.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-label-md font-bold shadow-sm transition-colors">
+          Simpan
+        </button>
       </template>
     </BaseModal>
   </div>
@@ -357,15 +388,27 @@ function formatRupiah(n) {
   return 'Rp ' + Number(n).toLocaleString('id-ID') 
 }
 
+const showKembali  = ref(false)
+const formKembali  = ref({ tanggal_kembali: '', kondisi_kendaraan: '' })
+
+function bukaKembali() {
+  formKembali.value = { tanggal_kembali: new Date().toLocaleDateString('sv-SE'), // YYYY-MM-DD lokal, bukan UTC kondisi_kendaraan: '' }
+  showKembali.value = true
+}
+
 async function tandaiKembali() {
   try {
-    await api.patch(`/transaksi/${selected.value.id}/selesai`)
+    await api.patch(`/transaksi/${selected.value.id}/selesai`, {
+      tanggal_kembali: formKembali.value.tanggal_kembali || undefined,
+      kondisi_kendaraan: formKembali.value.kondisi_kendaraan || undefined,
+    })
     toast.success('Berhasil', 'Kendaraan telah ditandai dikembalikan.')
+    showKembali.value = false
     showDetail.value = false
     fetchTransaksi()
   } catch (error) {
     console.error('Error finishing transaksi:', error)
-    toast.error('Gagal', 'Gagal menyelesaikan transaksi')
+    toast.error('Gagal', error.response?.data?.message || 'Gagal menyelesaikan transaksi')
   }
 }
 
@@ -377,7 +420,7 @@ async function konfirmasiTransaksi() {
     fetchTransaksi()
   } catch (error) {
     console.error('Error confirming transaksi:', error)
-    toast.error('Gagal', 'Gagal mengkonfirmasi transaksi')
+    toast.error('Gagal', error.response?.data?.message || 'Gagal mengkonfirmasi transaksi')
   }
 }
 
@@ -389,7 +432,7 @@ async function tolakTransaksi() {
     fetchTransaksi()
   } catch (error) {
     console.error('Error rejecting transaksi:', error)
-    toast.error('Gagal', 'Gagal menolak transaksi')
+    toast.error('Gagal', error.response?.data?.message || 'Gagal menolak transaksi')
   }
 }
 

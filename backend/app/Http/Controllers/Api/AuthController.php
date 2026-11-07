@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
+use App\Models\Pelanggan;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -30,28 +33,56 @@ class AuthController extends Controller
 
         return response()->json([
             'token' => $token,
-            'user'  => $user,
+            'user'  => $user->load('pelanggan'),
         ]);
     }
 
+    // Register publik hanya membuat akun pelanggan; akun admin dibuat lewat seeder
     public function register(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users',
+            'email'    => 'required|email|max:255|unique:users',
+            'telepon'  => 'required|string|max:20',
             'password' => 'required|min:8|confirmed',
         ]);
 
-        $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => Hash::make($request->password),
-            'role'     => 'admin',
-        ]);
+        $pelanggan = Pelanggan::withTrashed()->where('email', $data['email'])->first();
+        if ($pelanggan?->user_id) {
+            throw ValidationException::withMessages(['email' => ['Email sudah terdaftar.']]);
+        }
+
+        $user = DB::transaction(function () use ($data, $pelanggan) {
+            $user = User::create([
+                'name'     => $data['name'],
+                'email'    => $data['email'],
+                'telepon'  => $data['telepon'],
+                'password' => Hash::make($data['password']),
+                'role'     => 'pelanggan',
+            ]);
+
+            if ($pelanggan) {
+                // Pelanggan walk-in dengan email sama ditautkan ke akun baru
+                $pelanggan->restore();
+                $pelanggan->update(['user_id' => $user->id]);
+            } else {
+                Pelanggan::create([
+                    'user_id' => $user->id,
+                    'nama'    => $data['name'],
+                    'email'   => $data['email'],
+                    'telepon' => $data['telepon'],
+                    'level'   => 'Basic',
+                ]);
+            }
+
+            return $user;
+        });
+
+        Notification::keAdmin('user', 'Pelanggan baru', "{$user->name} mendaftar akun.", ['user_id' => $user->id]);
 
         $token = $user->createToken('siwaken-token')->plainTextToken;
 
-        return response()->json(['token' => $token, 'user' => $user], 201);
+        return response()->json(['token' => $token, 'user' => $user->load('pelanggan')], 201);
     }
 
     public function logout(Request $request)
@@ -62,7 +93,7 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        return response()->json($request->user()->load('pelanggan'));
     }
 
     public function updateProfile(Request $request)

@@ -7,13 +7,24 @@ export const useAuthStore = defineStore('auth', () => {
   const user  = ref(JSON.parse(localStorage.getItem('user') || 'null'))
 
   const isLoggedIn = computed(() => !!token.value)
+  const isAdmin    = computed(() => user.value?.role === 'admin')
+  const homePath   = computed(() => isAdmin.value ? '/admin/dashboard' : '/akun/booking')
+
+  function setSession(data) {
+    token.value = data.token
+    user.value  = data.user
+    localStorage.setItem('token', token.value)
+    localStorage.setItem('user', JSON.stringify(user.value))
+  }
 
   async function login(email, password) {
     const res = await api.post('/auth/login', { email, password })
-    token.value = res.data.token
-    user.value  = res.data.user
-    localStorage.setItem('token', token.value)
-    localStorage.setItem('user', JSON.stringify(user.value))
+    setSession(res.data)
+  }
+
+  async function register(payload) {
+    const res = await api.post('/auth/register', payload)
+    setSession(res.data)
   }
 
   async function logout() {
@@ -34,5 +45,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('user', JSON.stringify(user.value))
   }
 
-  return { token, user, isLoggedIn, login, logout, updateUser }
+  return { token, user, isLoggedIn, isAdmin, homePath, login, register, logout, updateUser }
 })

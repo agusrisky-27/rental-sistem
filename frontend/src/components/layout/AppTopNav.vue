@@ -1,5 +1,5 @@
 <template>
-  <header class="fixed top-0 right-0 left-64 z-30 flex justify-between items-center
+  <header class="print:hidden fixed top-0 right-0 left-64 z-30 flex justify-between items-center
                  px-8 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800
                  transition-colors shadow-sm">
 
@@ -35,13 +35,14 @@ const { isDark, toggleTheme } = useDarkMode()
 const route = useRoute()
 
 const titles = {
-  '/dashboard':     'Dashboard',
-  '/kendaraan':     'Kendaraan',
-  '/pelanggan':     'Pelanggan',
-  '/transaksi':     'Transaksi',
-  '/pembayaran':    'Pembayaran',
-  '/pengembalian':  'Pengembalian',
-  '/pengaturan':    'Pengaturan',
+  '/admin/dashboard':     'Dashboard',
+  '/admin/kendaraan':     'Kendaraan',
+  '/admin/pelanggan':     'Pelanggan',
+  '/admin/transaksi':     'Transaksi',
+  '/admin/pembayaran':    'Pembayaran',
+  '/admin/pengembalian':  'Pengembalian',
+  '/admin/laporan':       'Laporan',
+  '/admin/pengaturan':    'Pengaturan',
 }
 
 const pageTitle = computed(() => titles[route.path] || 'Dashboard')

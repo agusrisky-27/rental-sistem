@@ -93,6 +93,10 @@
             <input v-model="settingsForm.app_logo" type="text" class="form-input" placeholder="https://..." />
           </FormField>
 
+          <FormField label="Info Rekening Pembayaran">
+            <textarea v-model="settingsForm.rekening_info" rows="3" class="form-input resize-none" placeholder="Contoh: BCA 1234567890 a.n. SewaKen"></textarea>
+          </FormField>
+
           <div class="flex justify-end pt-2">
             <button type="submit" class="px-5 py-2.5 bg-secondary text-on-secondary font-bold rounded-lg hover:bg-secondary-container transition shadow-sm disabled:opacity-50" :disabled="loadingSettings">
               <span v-if="loadingSettings" class="animate-spin inline-block mr-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
@@ -130,7 +134,8 @@ const loadingSettings = ref(false)
 const settingsForm = reactive({
   app_name: 'SewaKen',
   app_description: 'Sistem Sewa Kendaraan',
-  app_logo: ''
+  app_logo: '',
+  rekening_info: ''
 })
 
 // Password State
